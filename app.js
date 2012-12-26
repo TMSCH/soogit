@@ -12,7 +12,7 @@ var app = module.exports = express.createServer();
 // Configuration
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 44694);
+  app.set('port', process.env.PORT || 3000);
   //  app.set('views', __dirname + '/views');
   app.use(express.logger('dev'));  /* 'default', 'short', 'tiny', 'dev' */
   app.use(express.bodyParser());
@@ -39,6 +39,6 @@ app.post('playlist', api.generatePlaylistFromTracklist);
 app.get('/search-tracks/:query', api.searchTracks)
 app.delete('/tracks/:id', api.deleteTrack);
 
-app.listen(3000, function(){
+app.listen(app.address().port, function(){
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
 });

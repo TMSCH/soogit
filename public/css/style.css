@@ -1,0 +1,105 @@
+body {
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background-color: #000;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.header {
+	text-align: center;
+}
+
+#player-container {
+	text-align: center;
+	height: 480px;
+	margin-top: 30px;
+}
+
+.navbar-inner {
+}
+
+.navbar-form {
+	padding-right: 20px;
+}
+
+#search-list-container {
+	width: 400px;
+	position: fixed;
+	top: 0px;
+	right: 0px;
+	height: 87%;
+	overflow: auto;
+	padding-top: 50px;
+	background-image: url('bg/search-bg.png');
+}
+
+#search-list {
+	z-index: 100;
+	color: #FFF;
+}
+
+#search-list tr:hover {
+	background-color: #333;
+	cursor: pointer;
+}
+
+#search-list td {
+	border-bottom: 1px solid #DDD;
+	padding: 4px;
+}
+
+#search-list .img {
+	width: 120px;
+}
+
+#search-list .img img {
+	border: 1px solid #777;
+}
+
+#search-list .texte {
+	width: 280px;
+	padding-left: 10px;
+	vertical-align: top;
+}
+
+#search-list .name {
+	font-size: 14px;
+}
+
+#search-list .description {
+	font-size: 10px;
+}
+
+#next-track-container {
+	z-index: 1;
+	position: fixed;
+	bottom: 0px;
+	width: 100%;
+}
+
+#next-track-container div {
+	z-index: 2;
+}
+
+#next-track {
+	z-index: 3;
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+	font-size: 18px;
+	height: 30px;
+	padding-top: 10px;
+	background-color: #999;
+}
+
+.empty {
+	background-color: red;
+}
+
+#next-track:hover {
+	background-color: #DDD;
+	cursor: pointer;
+}

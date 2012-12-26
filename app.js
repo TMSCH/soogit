@@ -12,7 +12,7 @@ var app = module.exports = express.createServer();
 // Configuration
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 3000);
+  app.set('port', process.env.PORT || 44694);
   //  app.set('views', __dirname + '/views');
   app.use(express.logger('dev'));  /* 'default', 'short', 'tiny', 'dev' */
   app.use(express.bodyParser());

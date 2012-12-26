@@ -39,6 +39,6 @@ app.post('playlist', api.generatePlaylistFromTracklist);
 app.get('/search-tracks/:query', api.searchTracks)
 app.delete('/tracks/:id', api.deleteTrack);
 
-app.listen(app.address().port, function(){
+app.listen(app.get('port'), function(){
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
 });

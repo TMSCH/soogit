@@ -118,19 +118,25 @@ window.Playlist = TrackCollection.extend({
             $.ajax({
                 url: url,
                 success: function(data){
-                    console.log("Succesfully retrieved similar tracks");
+                    if (data != null) {
+                        console.log("Succesfully retrieved similar tracks");
 
-                    //  We got similar tracks. Now we must store them in the playlist
-                    var i = 0;
-                    var track;
-                    while (data[i]){
-                        track = new Track({name: data[i].name, artist: data[i].artist, mbid: data[i].mbid});
-                        //console.log(track);
-                        if (track != null) self.push(track, {silent: true});
-                        i++;
+                        //  We got similar tracks. Now we must store them in the playlist
+                        var i = 0;
+                        var track;
+                        while (data[i]){
+                            track = new Track({name: data[i].name, artist: data[i].artist, mbid: data[i].mbid});
+                            //console.log(track);
+                            if (track != null) self.push(track, {silent: true});
+                            i++;
+                        }
+                        self.beingGenerated = false;
+                        self.trigger('update', 'success');
+                    } else {
+                        console.log("Could not retrieve similar tracks...");
+                        self.beingGenerated = false;
+                        self.trigger('update', "error");
                     }
-                    self.beingGenerated = false;
-                    self.trigger('update', 'success');
                     
                 },
                 error: function() {

@@ -215,7 +215,16 @@ var getMetaData = function (tracknamePlain, callback) {
 
     //  Then we query lastfm and try to find the metadata
     //  We only look for tracks matching the title
-    searchTrack (nameClean, function (tracks){
+
+    //  TEMP - Let's try to add the first word of the artist inside the query,
+    //  because for instance phunky data - fashion doesn't work even when retrieving 100 possible tracks....
+
+    var options = {
+        name: nameClean,
+        artist: artistClean.split(' ')[0],
+    }
+
+    searchTrack (options, function (tracks){
         //  If no track was found
         if (tracks == null) {
             console.log('Impossible to find a track in Lastfm database according to youtube name');
@@ -232,13 +241,15 @@ var getMetaData = function (tracknamePlain, callback) {
         
         //  We compare the artist with the one we have for every track found
         while (tracks[i]) {
-            if (compare(artistClean, tracks[i].artist)) {
+            //  Both the artist and the name should be close
+            if (compare(artistClean, tracks[i].artist) && compare(nameClean, tracks[i].name)) {
                 break;
             }
             i++;
         }
         console.log(tracks[i]);
-        //  If no track has a mbid, likely we won't have similar tracks but anyway we take the first one on the list
+        
+        //  By default, first one
         if (! tracks[i]) i = 0;
 
         console.log(tracks[i]);
@@ -257,8 +268,8 @@ var clean = function (text) {
 }
 
 var compare = function (text1, text2) {
-    text1 = text1.replace(/ {2,}/g, ' ').trim().toLowerCase();
-    text2 = text2.replace(/ {2,}/g, ' ').trim().toLowerCase();
+    text1 = text1.replace(/ {2,}/g, ' ').replace(/[^\w\d ]/g, '').trim().toLowerCase();
+    text2 = text2.replace(/ {2,}/g, ' ').replace(/[^\w\d ]/g, '').trim().toLowerCase();
     var n1 = text1.split(' ');
     var n2 = text2.split(' ');
     var len1 = n1.length;
@@ -282,16 +293,17 @@ var compare = function (text1, text2) {
 //  Search lastfm for a track data
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-var searchTrack = function (trackname, callback) {
+var searchTrack = function (options, callback) {
 
-    track = encodeURIComponent(trackname);
+    track = encodeURIComponent(options.name);
+    artist = options.artist ? options.artist : '';
 
-    console.log('Asking last fm for the track of title on youtube : ' + track);
+    console.log('Asking last fm for the track of title on youtube : ' + track + ' and artist first word : ' + artist);
 
     var options = {
         host: LastFMURL,
         port: 80,
-        path: '/2.0/?method=track.search&limit=100&track=' + track + '&api_key=' + LastFMKey + '&format=json'
+        path: '/2.0/?method=track.search&limit=100&track=' + track + '&artist=' + artist + '&api_key=' + LastFMKey + '&format=json'
     };
 
     console.log('URL : ' + options.host + options.path);

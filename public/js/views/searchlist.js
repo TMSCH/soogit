@@ -207,6 +207,7 @@ window.searchVideos = function(options, callback) {
                 tracks = [];
 
                 console.log("Query to Youtube API successfully retrieved.");
+                console.log(res);
                 while (trackData = res.data.items[i]) {
                     var track = new Track({
                         videoId: trackData.id,

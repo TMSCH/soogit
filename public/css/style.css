@@ -86,9 +86,13 @@ body {
 
 #next-track-container .disabled {
 	background-color: #900000;
-	text-align: center;
 	color: #DDD;
 	font-weight: bold;
+}
+
+#next-track-container .disabled div {
+	text-align: center;
+	width: 100%;
 }
 
 #next-track-container .not-disabled {
@@ -98,21 +102,31 @@ body {
 #next-track {
 	z-index: 3;
 	width: 100%;
-	margin-left: auto;
-	margin-right: auto;
-	font-size: 18px;
-	height: 30px;
-	padding-top: 10px;
+	height: 40px;
+	vertical-align: middle;
 }
 
 #next-track div {
 	float: left;
+	padding-top: 10px;
 	padding-left: 10px;
 	padding-right: 10px;
+	margin: 0px;
+	font-size: 18px;
+	text-align: center;
 }
+
 #next-track div.divider {
-	width: 1px;
-	border-right: 1px solid black;
+	width: 0px;
+	border-right: 1px solid #888;
+	height: 20px;
+	margin-top: 5px;
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+#next-track div.next-one {
+	color: #666;
 }
 
 #next-track div.pull-right {

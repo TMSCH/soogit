@@ -1,5 +1,7 @@
 <% if (typeof title == "undefined" && (typeof name == "undefined" || name == '')) { %>
-	<div id="next-track" class="disabled">No track in the playlist : add another one !</div>
+	<div id="next-track" class="disabled">
+		<div>No track in the playlist : add another one !</div>
+	</div>
 <% } else { %>
 	<div id="next-track" class="not-disabled">
 		<div class="next-one">Next track :</div>
@@ -14,7 +16,9 @@
 		<div class="divider"></div>
 		<% if (typeof youtubeData != 'undefined') { %>
 			<div class="play-it link">Play</div>
+			<div class="divider"></div>
 		<% } else { %>
+			<div class="divider"></div>
 			<img src="img/ajax-loader.gif" class="video-loader" /> Loading video
 		<% } %>
 		<div class="playlist-info">

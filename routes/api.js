@@ -271,6 +271,7 @@ var clean = function (text) {
                 //.replace(/(\(|\[|{).*(remix){0}(\)|\]|})/i,'')
                 .replace(/(\(|\[|{).*(\)|\]|})/i,'')
                 .replace(/(official video|lyrics|hdtv|hq|hd)/gi, '')
+                .replace(/\.[\w\d]+$/i, '')
                 .replace(/[^\w\d ]/g, '');
 }
 

@@ -70,6 +70,9 @@ window.TrackCollection = Backbone.Collection.extend({
 });
 
 window.Playlist = TrackCollection.extend({
+
+    beingGenerated: false,
+
     initialize: function() {
         this.on('reset', this.update, this);
         this.on('remove', this.update, this);
@@ -90,9 +93,12 @@ window.Playlist = TrackCollection.extend({
                 });
             }
             if (this.length == 1) {
-                this.getSimilarTracks();
+                if (! this.beingGenerated) {
+                    this.beingGenerated = true;
+                    this.getSimilarTracks();
+                }
             }
-        }
+        } else this.trigger('empty');
     },
 
     getSimilarTracks: function() {
@@ -123,11 +129,13 @@ window.Playlist = TrackCollection.extend({
                         if (track != null) self.push(track, {silent: true});
                         i++;
                     }
+                    self.beingGenerated = false;
                     self.trigger('update', 'success');
                     
                 },
                 error: function() {
                     console.log('Error when retrieving similar tracks');
+                    self.beingGenerated = false;
                     self.trigger('update', "error");
                 }
             });

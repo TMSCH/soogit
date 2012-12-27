@@ -3,10 +3,6 @@ body {
   background-color: #000;
 }
 
-a {
-  color: #00B7FF;
-}
-
 .header {
 	text-align: center;
 }
@@ -85,6 +81,7 @@ a {
 
 #next-track-container .disabled {
 	background-color: #900000;
+	text-align: center;
 	color: #DDD;
 	font-weight: bold;
 }
@@ -93,18 +90,47 @@ a {
 	background-color: #999;
 }
 
-#next-track-container .not-disabled:hover {
-	background-color: #CCC;
-	cursor: pointer;
-}
-
 #next-track {
 	z-index: 3;
 	width: 100%;
 	margin-left: auto;
 	margin-right: auto;
-	text-align: center;
 	font-size: 18px;
 	height: 30px;
 	padding-top: 10px;
+}
+
+#next-track div {
+	float: left;
+	padding-left: 10px;
+	padding-right: 10px;
+}
+#next-track div.divider {
+	width: 1px;
+	border-right: 1px solid black;
+}
+
+#next-track div.pull-right {
+	float: right;
+}
+
+#next-track .play-it {
+	color: #222;
+}
+#next-track .link:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+#next-track .trackname {
+	font-weight: bold;
+	font-variant: small-caps;
+}
+
+#next-track a{
+	color: #222;
+}
+
+#next-track a:hover{
+	text-decoration: underline;
 }

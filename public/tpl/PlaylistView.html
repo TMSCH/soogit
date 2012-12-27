@@ -2,24 +2,28 @@
 	<div id="next-track" class="disabled">No track in the playlist : add another one !</div>
 <% } else { %>
 	<div id="next-track" class="not-disabled">
-		<span class="next-one">Next track :</span>
-		<% if (typeof youtubeData != 'undefined') { %>
-			<span class="play-it hidden">Play it now !</span>
-		<% } else { %>
-			<img src="img/ajax-loader.gif" class="video-loader" />
-		<% } %>
+		<div class="next-one">Next track :</div>
 
+		<div class="trackname">
 		<% if (typeof title == "undefined" && typeof name != 'undefined') { %>
-			Loading video for <%= artist %> - <%= name %>
+			<%= artist %> - <%= name %>
 		<% } else { %>
 			<%= title %>
 		<% } %>
-		<span class="playlist-info">
+		</div>
+		<div class="divider"></div>
+		<% if (typeof youtubeData != 'undefined') { %>
+			<div class="play-it link">Play</div>
+		<% } else { %>
+			<img src="img/ajax-loader.gif" class="video-loader" /> Loading video
+		<% } %>
+		<div class="playlist-info">
 			<% if (typeof onPlaylist != 'undefined') { %>
-				| Playlist : <%= onPlaylist %> tracks
+				Playlist : <%= onPlaylist %> tracks
 			<% } %>
-		</span>
+		</div>
 		<img src="img/ajax-loader.gif" class="playlist-loader hidden" />
-		<span class="playlist-loading-info hidden">Loading playlist...</span>
+		<div class="playlist-loading-info hidden">Loading playlist...</div>
+		<div class="delete-track pull-right link">Delete track</div>
 	</div>
 <% } %>

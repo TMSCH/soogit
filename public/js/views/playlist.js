@@ -1,9 +1,8 @@
 window.PlaylistView = Backbone.View.extend({
 	
 	events: {
-		"mouseover #next-track": "togglePlay",
-		"mouseout #next-track": "removePlay",
-		"click #next-track": "pressPlay",
+		"click .play-it": "pressPlay",
+		"click .delete-track": 'deleteNextTrack',
 	},
 
 	initialize: function() {
@@ -14,6 +13,7 @@ window.PlaylistView = Backbone.View.extend({
 		//this.model.on('remove', this.render, this);
 		this.model.on('update', this.playlistUpdated, this);
 		this.model.on('get-video', this.gettingVideo, this);
+		this.model.on('empty', this.render, this);
 	},
 
 	render: function() {
@@ -37,7 +37,7 @@ window.PlaylistView = Backbone.View.extend({
 			$('.playlist-loader', this.el).addClass('hidden');
 		} else if (message == 'error') {
 			$('.playlist-loader').addClass('hidden');
-	        $('.playlist-info').html('| We could not find similar tracks, sorry');
+	        $('.playlist-info').html('We could not find similar tracks, sorry');
 		}
 	},
 
@@ -51,25 +51,17 @@ window.PlaylistView = Backbone.View.extend({
 		}
 	},
 
-	togglePlay: function(){
-		if (this.model.length > 0) {
-			$('#next-track .next-one').addClass('hidden');
-			$('#next-track .play-it').removeClass('hidden');
-		}
-	},
-
-	removePlay: function(){
-		if (this.model.length > 0) {
-			$('#next-track .next-one').removeClass('hidden');
-			$('#next-track .play-it').addClass('hidden');
-		}
-	},
-
 	pressPlay: function() {
 		if (this.model.length > 0)
-			//this.model.shift();
 			loadNextVideo(this.model.shift());
 		else
 			$('#trackname').focus();
+	},
+
+	deleteNextTrack: function() {
+		if (this.model.length > 0){
+			console.log('Deleting next track');
+			this.model.shift();
+		}
 	}
 });

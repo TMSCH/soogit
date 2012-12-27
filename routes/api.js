@@ -252,7 +252,7 @@ var clean = function (text) {
     return text.replace(/\(original mix\)/i, '')
                 //.replace(/(\(|\[|{).*(remix){0}(\)|\]|})/i,'')
                 .replace(/(\(|\[|{).*(\)|\]|})/i,'')
-                .replace(/(official video|lyrics|hdtv)/gi, '')
+                .replace(/(official video|lyrics|hdtv|hq|hd)/gi, '')
                 .replace(/[^\w\d ]/g, '');
 }
 

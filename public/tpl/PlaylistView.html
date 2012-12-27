@@ -1,0 +1,25 @@
+<% if (typeof title == "undefined" && (typeof name == "undefined" || name == '')) { %>
+	<div id="next-track" class="disabled">No track in the playlist : add another one !</div>
+<% } else { %>
+	<div id="next-track" class="not-disabled">
+		<span class="next-one">Next track :</span>
+		<% if (typeof youtubeData != 'undefined') { %>
+			<span class="play-it hidden">Play it now !</span>
+		<% } else { %>
+			<img src="img/ajax-loader.gif" class="video-loader" />
+		<% } %>
+
+		<% if (typeof title == "undefined" && typeof name != 'undefined') { %>
+			Loading video for <%= artist %> - <%= name %>
+		<% } else { %>
+			<%= title %>
+		<% } %>
+		<span class="playlist-info">
+			<% if (typeof onPlaylist != 'undefined') { %>
+				| Playlist : <%= onPlaylist %> tracks
+			<% } %>
+		</span>
+		<img src="img/ajax-loader.gif" class="playlist-loader hidden" />
+		<span class="playlist-loading-info hidden">Loading playlist...</span>
+	</div>
+<% } %>

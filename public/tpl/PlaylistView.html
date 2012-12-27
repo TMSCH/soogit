@@ -15,7 +15,7 @@
 		</div>
 		<div class="divider"></div>
 		<% if (typeof youtubeData != 'undefined') { %>
-			<div class="play-it link">Play</div>
+			<div class="play-it link">Play now</div>
 			<div class="divider"></div>
 		<% } else { %>
 			<div class="divider"></div>
@@ -25,6 +25,7 @@
 			<% if (typeof onPlaylist != 'undefined') { %>
 				<!--Playlist : <%= onPlaylist %> tracks-->
 				Playlist loaded
+				<small>(<%= onPlaylist %> tracks)</small>
 			<% } %>
 		</div>
 		<img src="img/ajax-loader.gif" class="playlist-loader hidden" />

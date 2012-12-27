@@ -243,7 +243,9 @@ var getMetaData = function (tracknamePlain, callback) {
             }
 
             callback(track);
+            return;
         }
+
         var i = 0;
         
         //  We compare the artist with the one we have for every track found
@@ -326,23 +328,28 @@ var searchTrack = function (options, callback) {
         .on('end', function() {
             res = JSON.parse(data);
             console.log(res);
-            var tracksMatched = res.results.trackmatches.track;
-            var tracks = {};
-            var maxPos = Math.min(res.results['opensearch:totalResults'], res.results['opensearch:itemsPerPage']);
+            if (res.results['opensearch:totalResults'] > 0) {
+                var tracksMatched = res.results.trackmatches.track;
+                var tracks = [];
+                var maxPos = Math.min(res.results['opensearch:totalResults'], res.results['opensearch:itemsPerPage']);
 
-            //  Handle the case of only one track received
-            if (maxPos > 1) {
-                for (var i = 0; i < maxPos; i++) {
-                    tracks[i] = {name: tracksMatched[i].name, artist: tracksMatched[i].artist, mbid: tracksMatched[i].mbid};
+                //  Handle the case of only one track received
+                if (maxPos > 1) {
+                    for (var i = 0; i < maxPos; i++) {
+                        tracks[i] = {name: tracksMatched[i].name, artist: tracksMatched[i].artist, mbid: tracksMatched[i].mbid};
+                    }
+                } else {
+                    tracks[0] = tracksMatched;
                 }
-            } else {
-                tracks[0] = tracksMatched;
-            }
-            
-            console.log('Tracks found on lastfm according to the query :');
-            console.log(tracks);
+                
+                console.log('Tracks found on lastfm according to the query :');
+                console.log(tracks);
 
-            callback(tracks);
+                callback(tracks);
+            } else {
+                console.log('No track found on lastfm according to the query');
+                callback(null);
+            }
         });
     })
     //  If there is an error while doing the HTTP request
@@ -363,7 +370,7 @@ var searchSimilarTracksByTrack = function (track, callback) {
     var options = {
         host: LastFMURL,
         port: 80,
-        path: '/2.0/?method=track.getSimilar&api_key=' + LastFMKey + '&format=json&limit=10'
+        path: '/2.0/?method=track.getSimilar&api_key=' + LastFMKey + '&format=json&limit=19'
     };
 
     if (track.mbid)
@@ -383,24 +390,30 @@ var searchSimilarTracksByTrack = function (track, callback) {
         .on('end', function() {
             res = JSON.parse(data);
             console.log(res);
-            var tracksMatched = res.similartracks.track;
+            if (!res.error){
+                var tracksMatched = res.similartracks.track;
 
-            //  If no similar
-            if (res.similartracks['#text']) {
+                //  If no similar
+                if (res.similartracks['#text']) {
+                    callback(null);
+                    return;
+                }
+
+                var tracks = [];
+                var i = 0;
+                while (tracksMatched[i]) {
+                    tracks[i] = {name: tracksMatched[i].name, artist: tracksMatched[i].artist.name, mbid: tracksMatched[i].mbid};
+                    i++;
+                }
+                console.log('Tracks similar :');
+                tracks = randomSort(tracks);
+                console.log(tracks);
+
+                callback(tracks);
+            } else { // Error : could not find track
+                console.log('The track was not found in lastfm database, impossible to get similar tracks');
                 callback(null);
-                return;
             }
-
-            var tracks = {};
-            var i = 0;
-            while (tracksMatched[i]) {
-                tracks[i] = {name: tracksMatched[i].name, artist: tracksMatched[i].artist.name, mbid: tracksMatched[i].mbid};
-                i++;
-            }
-            console.log('Tracks similar :');
-            console.log(tracks);
-
-            callback(tracks);
         });
     })
     //  If there is an error while doing the HTTP request
@@ -411,67 +424,17 @@ var searchSimilarTracksByTrack = function (track, callback) {
     return;
 };
 
-/*--------------------------------------------------------------------------------------------------------------------*/
-//  Function that get the results from a search query to Youtube API
-
-var searchVideos = function (query, callback) {
-    //  Creating the query
-    query = query.toLowerCase().replace(/ /g,"+");
-    console.log("Query to Youtube API : " + query);
-
-    //  Searching for videos through the Youtube Data API
-    //  Options for the GET request
-    var maxResults = 10;
-    var options = {
-        host: 'gdata.youtube.com',
-        port: 80,
-        path: '/feeds/api/videos?q=' + query + '&max-results=' + maxResults + '&alt=jsonc&v=2'
-    };
-
-    //  Getting the response
-    http.get(options, function(res) {
-        console.log("STATUS : " + res.statusCode);
-        res.setEncoding('utf8');
-        var data = "";
-        //  Handle of the chunks of data
-        res.on('data', function (chunk) {
-            data += chunk;
-        });
-        res.on('end', function() {
-            res = JSON.parse(data);
-
-            //if there is no item n° 1
-            if (! res.data.items[0]) {
-                console.log("Could not retrieve valid data from the result");
-                callback ("No result", null);
-            } else {
-                var results = {};
-                var i = 0;
-                var trackData = null;
-                while (trackData = res.data.items[i]) {
-                    var track = {
-                        videoId: trackData.id,
-                        name: trackData.title,
-                        img: trackData.thumbnail.sqDefault,
-                        duration: trackData.duration,
-                        views: trackData.viewCount,
-                        dateUpload: trackData.uploaded,
-                        description: trackData.description,
-                        i: i
-                    };
-                    results[i] = track;
-                    i++;
-                }
-                callback(null, results);
-            }
-        });
-    })
-    //  If there is an error while doing the HTTP request
-    .on('error', function(e) {
-        console.log("Got error: " + e.message);
-        callback(e.message, null);
-    });
-};
+var randomSort = function (list){
+    var len = list.length;
+    var result = [];
+    while (len != 0) {
+        var index = Math.floor(Math.random() * len); // Generate a random number between 0 and length of array
+        result.push(list[index]);
+        list.splice(index, 1);
+        len--;
+    }
+    return result;
+}
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 // Populate database with sample data -- Only used once: the first time the application is started.

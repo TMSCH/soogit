@@ -34,18 +34,14 @@ function onPlayerReady(event) {
 function onPlayerStateChange(event) {
     if (event.data == YT.PlayerState.ENDED) {
     	console.log('Video ended');
-    	loadNextVideo();
+    	if (playlist.length > 0)
+    		loadNextVideo(playlist.shift());
     }
 }
 
-function loadNextVideo() {
-	//	If the playlist is not empty
-	if (playlist.length != 0) {
-		//	Taking the first track in the playlist
-		var track = playlist.shift();
-		if (track.get('videoId')) {
-			console.log('Loading next one on the playlist... ID: ' + track.get('videoId'));
-			player.loadVideoById(track.get('videoId'));
-		}
+function loadNextVideo(track) {
+	if (track.get('videoId')) {
+		console.log('Loading next one on the playlist... ID: ' + track.get('videoId'));
+		player.loadVideoById(track.get('videoId'));
 	}
 }

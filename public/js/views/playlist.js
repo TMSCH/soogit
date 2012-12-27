@@ -1,4 +1,4 @@
-window.NextTrackView = Backbone.View.extend({
+window.PlaylistView = Backbone.View.extend({
 	
 	events: {
 		"mouseover #next-track": "togglePlay",
@@ -8,52 +8,47 @@ window.NextTrackView = Backbone.View.extend({
 
 	initialize: function() {
 		this.render();
-		this.model.on('add', this.updatePlaylist, this);
-		this.model.on('remove', this.updatePlaylist, this);
+		//this.model.on('reset', this.updatePlaylist, this);
+		//this.model.on('remove', this.updatePlaylist, this);
+		//this.model.on('reset', this.render, this);
+		//this.model.on('remove', this.render, this);
+		this.model.on('update', this.playlistUpdated, this);
+		this.model.on('get-video', this.gettingVideo, this);
 	},
 
 	render: function() {
-		var track = null;
 		if (this.model.length > 0){
 			track = this.model.at(0).toJSON();
+			track.onPlaylist = this.model.length;
 		} else {
-			track = {name: "No track in the playlist : add another one !"}
+			track = {}
 		}
 		$(this.el).html(this.template(track));
+
 		return this;
 	},
 
-	updatePlaylist: function() {
-		if (this.model.length == 1){
-			var url = 'playlist/' + this.model.at(0).get('name');
-			var self = this;
-			$.ajax({
-	            url: url,
-	            success: function(data){
-	            	console.log(data);
-	            	
-	            	//	We got similar tracks. Now we must store them in the playlist with their associated Youtube information
-	            	var i = 0;
-	            	var toAddToPlaylist = [];
-	            	var track;
-	            	while (data[i]){
-	            		track = new Track({name: data[i].name, artist: data[i].artist});
-	            		//console.log(track);
-	            		if (track != null) toAddToPlaylist.push(track);
-	            		i++;
-	            	}
-	            	self.model.add(toAddToPlaylist);
-	            },
-	            error: function() {
-	            	console.log('Error when retrieving similar tracks');
-	            }
-	        });
-		} else if (this.model.length > 1) {
-			if (! this.model.at(0).has('videoId')){
-				this.model.at(0).searchOneVideo(function(){});
-			}
-		}
+	playlistUpdated: function(message) {
 		this.render();
+		if (message == 'start') {
+			$('.playlist-loader, .playlist-info').removeClass('hidden');
+			$('.playlist-info').html('Loading a playlist with similar tracks...');
+		} else if (message == 'success') {
+			$('.playlist-loader', this.el).addClass('hidden');
+		} else if (message == 'error') {
+			$('.playlist-loader').addClass('hidden');
+	        $('.playlist-info').html('| We could not find similar tracks, sorry');
+		}
+	},
+
+	gettingVideo: function(message) {
+		if (message == 'start') {
+			this.render();
+		} else if (message == 'success') {
+			this.render();
+		} else if (message == 'error') {
+			this.render();
+		}
 	},
 
 	togglePlay: function(){
@@ -71,6 +66,10 @@ window.NextTrackView = Backbone.View.extend({
 	},
 
 	pressPlay: function() {
-		loadNextVideo();
+		if (this.model.length > 0)
+			//this.model.shift();
+			loadNextVideo(this.model.shift());
+		else
+			$('#trackname').focus();
 	}
 });

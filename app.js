@@ -35,6 +35,7 @@ app.get('/', api.findAll);
 app.get('/tracks', api.findAll);
 app.post('/tracks', api.addTrack);
 app.get('/playlist/:track', api.generatePlaylistFromTrack);
+app.get('/playlistByMBID/:mbid', api.generatePlaylistFromTrackByMBID);
 app.post('playlist', api.generatePlaylistFromTracklist);
 app.get('/search-tracks/:query', api.searchTracks)
 app.delete('/tracks/:id', api.deleteTrack);

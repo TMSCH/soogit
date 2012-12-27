@@ -1,24 +1,25 @@
 window.NavbarView = Backbone.View.extend({
 
 	count: 0,
+
+	searchListItems: [],
 	
 	events: {
-		"click #search-track": "searchVideos",
+		"click #search-track": "newSearch",
 		"keypress #trackname": "isSubmit",
 		"mouseout #search-list-container": "hideEvent",
 		"mouseout .navbar": "hideEvent",
 		"mouseover #search-list-container": "show",
 		"click #trackname": "isNotEmpty",
-		"click #search-list td": "addTrack",
+		"click #search-list td": "hide",
         //"input #trackname" : "queryChanged",
-        //"blur #trackname" : "searchVideos",
-        //"click .search" : "addTrack"
 	},
 
 	initialize: function() {
 		this.count = 0;
 		this.render();
 		this.model.on('add', this.refresh, this);
+		this.model.on('remove', this.refresh, this);
 	},
 
 	render: function() {
@@ -33,15 +34,33 @@ window.NavbarView = Backbone.View.extend({
 	-----------------------------------------------------------------------------------------------------*/
 
 	refresh: function() {
-		$('#search-list', this.el).html("");
 		var len = this.model.length;
 
 		//	Perform a refresh only if there is videos
 		if (len > 0){
+			//	We show the searchlist
+			$('#search-list-container', this.el).removeClass('hidden');
 			this.show();
-			for (var i = 0; i < len; ++i) {
-				$('#search-list', this.el).append(new SearchListItemView({model: this.model.at(i)}).render().el);
+
+			//	We get the number of already loaded views
+			var lenLoaded = this.searchListItems.length;
+
+			//	Add the new search results to the search-list div
+			//console.log('Updating the search results...');
+			for (var i = lenLoaded; i < len; i++) {
+				//console.log('Loading result number ' + i);
+				this.searchListItems.push(new SearchListItemView({model: this.model.at(i)}));
+				$('#search-list', this.el).append(this.searchListItems[i].render().el);
 			}
+		} else {
+			//We remove all the old views
+			//console.log('Removing all the search results views');
+			$('#search-list', this.el).html("");
+			for (var i = 0; i < this.searchListItems.length; i++)
+			{
+				this.searchListItems[i].remove();
+			}
+			this.searchListItems = [];
 		}
 	},
 
@@ -78,36 +97,86 @@ window.NavbarView = Backbone.View.extend({
 
 	isSubmit: function (e) {
 		if (e.keyCode === 13){
-			this.searchVideos();
+			this.newSearch();
 		}
 	},
 
 	queryChanged: function() {
 		this.count++;
         var query = $("#trackname", this.el).val();
-        if (this.count % 10 == 0 || query[query.length - 1] == " ") this.searchVideos();
+        if (this.count % 10 == 0 || query[query.length - 1] == " ") this.newSearch();
 	},
 
 	/*-----------------------------------------------------------------------------------------------------
 	// Search videos on Youtube API with the query specified in the input 'trackname'
 	-----------------------------------------------------------------------------------------------------*/
 
-	searchVideos: function () {
-		$('#search-list-container', this.el).removeClass('hidden');
-        query = $("#trackname", this.el).val().toLowerCase().replace(/ /g,"+");
+	newSearch: function () {
+		$('.search-loader').removeClass('hidden');
+        var self = this;
+        searchVideos(
+        {
+        	query: $("#trackname", this.el).val(),
+        	maxResults: 20
+        },
+        function(tracks){
+        	$('.search-loader').addClass('hidden');
+
+        	if (tracks == null) return null;
+
+        	//	Adding the result to the model
+        	self.model.reset();
+        	self.model.trigger('remove');
+        	self.model.add(tracks);
+        	return;
+        }); 
+    },
+
+});
+
+window.SearchListItemView = Backbone.View.extend({
+
+	events: {
+		'click tr': 'addTrackToPlaylist'
+	},
+
+	initialize: function() {
+	},
+
+	render: function() {
+		$(this.el).html(this.template(this.model.toJSON()));
+		return this;
+	},
+
+	addTrackToPlaylist: function() {
+		//	We reset the playlist so the first track is the one selected
+		playlist.reset(this.model);
+	}
+});
+
+	/*-----------------------------------------------------------------------------------------------------
+    //	Search videos on Youtube API with the query specified in the 'options' object
+    //	Options can specify a limit of number of results (maxResults)
+    //
+    //	The results will be returned as an array of Track if there is more than 1 video,
+    //	or just as a Track if there is 1 result
+    -----------------------------------------------------------------------------------------------------*/
+
+window.searchVideos = function(options, callback) {
+
+		query = options.query.toLowerCase().replace(/ /g,"+");
+		maxResults = typeof options.maxResults !== undefined ? options.maxResults : 1;
+
+        if (!query) {
+        	console.log('No query specified');
+        	callback(null);
+        }
         
-        if (!query)
-            return null;
-        
-        console.log("Query to Youtube API : " + query);
+        //console.log("Query to Youtube API : " + query);
 
         //  Searching for videos through the Youtube Data API
         //  Options for the GET request
-        var maxResults = 10;
-        var url = 'http://gdata.youtube.com/feeds/api/videos';//?q=' + query + '&max-results=' + maxResults + '&alt=jsonc&v=2';
-
-        var res = null;
-        var self = this;
+        var url = 'http://gdata.youtube.com/feeds/api/videos';
 
         //  Getting the response from Youtube API
         $.ajax({
@@ -118,66 +187,39 @@ window.NavbarView = Backbone.View.extend({
                     v: '2'},
 
             success: function(res){
-            	var i = 0;
-            	self.model.reset();
-            	//console.log(JSON.stringify(res));
-            	console.log("Query successfully retrieved.");
-	            while (trackData = res.data.items[i]) {
-	                var track = new Track({
-	                    videoId: trackData.id,
-	                    name: trackData.title,
-	                    img: trackData.thumbnail.sqDefault,
-	                    duration: trackData.duration,
-	                    views: trackData.viewCount,
-	                    dateUpload: trackData.uploaded.substr(0, 10),
-	                    description: trackData.description,
-	                    i: i
-	                });
-	                if (trackData.description.length > 120)
-	                	track.set('description', trackData.description.substr(0, 117) + '...');
-	                self.model.add(track);
-	                //$("#search-results", this.el).append(new TrackListItemView({model: track}).render().el);
-	                i++;
-	            }
+                var i = 0;
+                tracks = [];
+
+                console.log("Query to Youtube API successfully retrieved.");
+                while (trackData = res.data.items[i]) {
+                    var track = new Track({
+                        videoId: trackData.id,
+                        title: trackData.title,
+                        img: trackData.thumbnail.sqDefault,
+                        durationInSec: trackData.duration,
+                        views: trackData.viewCount,
+                        uploaded_raw: trackData.uploaded.substr(0, 10),
+                        description: trackData.description,
+                        youtubeData: true,
+                    });
+
+                    tracks.push(track);
+                    i++;
+                }
+
+                if (i == 0){ //	Rare case we hope
+                	console.log('No result were returned with youtube query.')
+                	callback(null);
+                }
+                else
+                	callback(tracks);
+                return;
             },
 
             error: function() {
-                return null;
+            	console.log('Error while querying Youtube API');
+                callback(null);
+                return;
             }
         });
-        
-    },
-
-    addTrack: function(e) {
-    	elt = e.target;
-    	while (elt.nodeName != 'TR')
-    		elt = elt.parentNode;
-    	
-    	var i = $(elt).data('id');
-		
-		//	We reset the playlist so the first track is the one selected
-		playlist.reset();
-    	playlist.add(this.model.at(i));
-
-    	//	Then we can hide the search bar, and reset the trackname (is it useful?)
-    	this.hide();
-    },
-
-    playTrack: function(e) {
-    	var i = $(e.target.parentNode).data('id');
-
-    	$('#player').html(new PlayerView({model: this.model.at(i)}).el);
-    },
-
-});
-
-window.SearchListItemView = Backbone.View.extend({
-
-	initialize: function() {
-	},
-
-	render: function() {
-		$(this.el).html(this.template(this.model.toJSON()));
-		return this;
-	}
-});
+}

@@ -83,6 +83,21 @@ a {
 	z-index: 2;
 }
 
+#next-track-container .disabled {
+	background-color: #900000;
+	color: #DDD;
+	font-weight: bold;
+}
+
+#next-track-container .not-disabled {
+	background-color: #999;
+}
+
+#next-track-container .not-disabled:hover {
+	background-color: #CCC;
+	cursor: pointer;
+}
+
 #next-track {
 	z-index: 3;
 	width: 100%;
@@ -92,14 +107,4 @@ a {
 	font-size: 18px;
 	height: 30px;
 	padding-top: 10px;
-	background-color: #999;
-}
-
-.empty {
-	background-color: red;
-}
-
-#next-track:hover {
-	background-color: #DDD;
-	cursor: pointer;
 }

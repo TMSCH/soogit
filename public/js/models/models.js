@@ -7,89 +7,52 @@ window.Track = Backbone.Model.extend({
     potentialTracks: {},
 
     initialize: function () {
+        //  Every time the model change we format the content
+        this.on('change', this.format, this);
+        this.format();
     },
 
     validate: function (attrs) {
-        if (attrs.name.length == 0) {
+        //  The title of the track/video cannot be empty
+        /*if (attrs.title.length == 0) {
             return "You must enter a name";
-        };
+        };*/
+    },
+
+    format: function() {
+        //  Some formatting
+        if (this.has('description'))
+            if (this.get('description').length > 120)
+                this.set('description', this.get('description').substr(0, 117) + '...');
+
+        if (this.has('durationInSec'))
+            this.set('duration', Math.floor(this.get('durationInSec') / 60) + 'min' + this.get('durationInSec') % 60);
+
+        if (this.has('uploaded_raw'))
+            this.set('uploaded', this.get('uploaded_raw').substr(0,10));
     },
 
     searchOneVideo: function(callback) {
         var self = this;
-        this.searchVideos(1, function() {
-            //console.log(self.potentialTracks);
-            if (self.potentialTracks[0] == null || self.potentialTracks == {}) return null;
-
-            $.each(self.potentialTracks[0], function (key, val){
-                self.set(key, val);
-            });
-            callback();
-        });
-    },
-
-    /*-----------------------------------------------------------------------------------------------------
-    // Search videos on Youtube API with the query specified in the input 'trackname'
-    -----------------------------------------------------------------------------------------------------*/
-
-    searchVideos: function (maxResults, callback) {
-        maxResults = typeof maxResults !== undefined ? maxResults : 1;
-
-        query = this.get('name') + ' ' + this.get('artist');
-        query = query.toLowerCase().replace(/ /g,"+");
-        
-        if (!query)
-            return null;
-        
-        console.log("Query to Youtube API : " + query);
-
-        //  Searching for videos through the Youtube Data API
-        //  Options for the GET request
-        var url = 'http://gdata.youtube.com/feeds/api/videos';
-
-        var res = null;
-        var self = this;
-
-        //  Getting the response from Youtube API
-        $.ajax({
-            url: url,
-            data: {q: query,
-                    'max-results': maxResults,
-                    alt: 'jsonc',
-                    v: '2'},
-
-            success: function(res){
-                var i = 0;
-                self.potentialTracks = {};
-
-                console.log("Query successfully retrieved.");
-                while (trackData = res.data.items[i]) {
-                    var track = {
-                        videoId: trackData.id,
-                        name: trackData.title,
-                        img: trackData.thumbnail.sqDefault,
-                        duration: trackData.duration,
-                        views: trackData.viewCount,
-                        dateUpload: trackData.uploaded.substr(0, 10),
-                        description: trackData.description,
-                        i: i
-                    }
-                    if (trackData.description.length > 120)
-                        track.description = trackData.description.substr(0, 117) + '...';
-
-                    self.potentialTracks[i] = track;
-                    i++;
-                }
-                callback();
-                return;
+        searchVideos(
+            {
+                query: this.get('name') + ' ' + this.get('artist'),
+                maxResults: 1
             },
+            function(tracks) {
+                console.log(tracks[0].toJSON());
+                if (tracks == null || tracks.length == 0){
+                    callback(false);
+                    return;
+                }
 
-            error: function() {
-                callback();
-                return null;
+                $.each(tracks[0].toJSON(), function (key, val){
+                    self.set(key, val);
+                });
+                callback(true);
+                return;
             }
-        });
-        
+        );
     },
 
     defaults: {
@@ -104,4 +67,69 @@ window.TrackCollection = Backbone.Collection.extend({
 
     url: "/tracks"
 
+});
+
+window.Playlist = TrackCollection.extend({
+    initialize: function() {
+        this.on('reset', this.update, this);
+        this.on('remove', this.update, this);
+    },
+
+    update: function() {
+        if (this.length > 0) {
+            if (! this.at(0).has('videoId')){
+                this.trigger('get-video', 'start');
+                var self = this;
+                this.at(0).searchOneVideo(function(res){
+                    if (res)
+                        self.trigger('get-video', 'success');
+                    else {
+                        self.trigger('get-video', 'error');
+                        self.shift();
+                    }
+                });
+            }
+            if (this.length == 1) {
+                this.getSimilarTracks();
+            }
+        }
+    },
+
+    getSimilarTracks: function() {
+            this.trigger('update', 'start');
+
+            //  Check for the information we have, according to that we'll ask a specific request
+            if (this.at(0).has('mbid'))
+                var url = 'playlistByMBID/' + encodeURIComponent(this.at(0).get('mbid'));
+            else if (this.at(0).has('title'))
+                var url = 'playlist/' + encodeURIComponent(this.at(0).get('title'));
+            else if (this.at(0).has('artist'))
+                var url = 'playlist/' + encodeURIComponent(this.at(0).get('artist')) + '+' + encodeURIComponent(this.at(0).get('name'));
+            
+            var self = this;
+
+            console.log('Requesting similar tracks...');
+            $.ajax({
+                url: url,
+                success: function(data){
+                    console.log("Succesfully retrieved similar tracks");
+
+                    //  We got similar tracks. Now we must store them in the playlist
+                    var i = 0;
+                    var track;
+                    while (data[i]){
+                        track = new Track({name: data[i].name, artist: data[i].artist, mbid: data[i].mbid});
+                        //console.log(track);
+                        if (track != null) self.push(track, {silent: true});
+                        i++;
+                    }
+                    self.trigger('update', 'success');
+                    
+                },
+                error: function() {
+                    console.log('Error when retrieving similar tracks');
+                    self.trigger('update', "error");
+                }
+            });
+    }
 });

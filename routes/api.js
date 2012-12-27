@@ -180,6 +180,26 @@ exports.generatePlaylistFromTrack = function (req, res) {
     });
 }
 
+exports.generatePlaylistFromTrackByMBID = function (req, res) {
+    //first we need to clean the name
+    console.log('Beginning of the generation of playlist from the track of mbid: ' + req.params.mbid);
+
+    track = {mbid: req.params.mbid};
+
+    searchSimilarTracksByTrack(track, function(tracks){
+            
+        //  If could not retrieve tracks similar
+        if (tracks == null) {
+            console.log('Could not find similar tracks on Lastfm');
+            res.send(null);
+            return;
+        }
+
+        res.send(tracks);
+        return;
+    });
+}
+
 /*--------------------------------------------------------------------------------------------------------------------*/
 //  Function that get the results from a search query to Youtube API
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -271,7 +291,7 @@ var searchTrack = function (trackname, callback) {
     var options = {
         host: LastFMURL,
         port: 80,
-        path: '/2.0/?method=track.search&limit=10&track=' + track + '&api_key=' + LastFMKey + '&format=json'
+        path: '/2.0/?method=track.search&limit=100&track=' + track + '&api_key=' + LastFMKey + '&format=json'
     };
 
     console.log('URL : ' + options.host + options.path);
@@ -323,7 +343,7 @@ var searchSimilarTracksByTrack = function (track, callback) {
     var options = {
         host: LastFMURL,
         port: 80,
-        path: '/2.0/?method=track.getSimilar&api_key=' + LastFMKey + '&format=json&limit=5'
+        path: '/2.0/?method=track.getSimilar&api_key=' + LastFMKey + '&format=json&limit=10'
     };
 
     if (track.mbid)

@@ -2,7 +2,7 @@
 //  Global variables : playlist, ie TrackCollection
 -----------------------------------------------------------------------------------------------------*/
 
-var playlist = new TrackCollection(new Track({name: "Burial - Street Halo"}));
+var playlist = new Playlist();
 
 /*-----------------------------------------------------------------------------------------------------
 //  Backbone router
@@ -20,7 +20,7 @@ var AppRouter = Backbone.Router.extend({
             $("#sidebar").html(new SidebarView({model: trackList}).el);
         }});*/
         $('#navbar').html(new NavbarView({model: trackList}).el);
-        $('#next-track-container').html(new NextTrackView({model: playlist}).el);
+        $('#next-track-container').html(new PlaylistView({model: playlist}).el);
     },
 
 	list: function() {
@@ -33,7 +33,7 @@ var AppRouter = Backbone.Router.extend({
 
 });
 
-utils.loadTemplate(['NavbarView', 'SearchListItemView', 'NextTrackView'], function() {
+utils.loadTemplate(['NavbarView', 'SearchListItemView', 'PlaylistView'], function() {
     app = new AppRouter();
     Backbone.history.start();
 });

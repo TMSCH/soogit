@@ -150,6 +150,11 @@ exports.searchTracks = function (req, res) {
 //  Method which will send a list of tracks artist - track name so the client can load the videos
 /*--------------------------------------------------------------------------------------------------------------------*/
 
+/*--------------------------------------------------------------------------------------------------------------------*/
+//  ISSUE : sometimes, for old tracks, it's difficult to find similar tracks
+//  One possible solution could be to look for similar artists
+/*--------------------------------------------------------------------------------------------------------------------*/
+
 exports.generatePlaylistFromTrack = function (req, res) {
     //first we need to clean the name
     console.log('Beginning of the generation of playlist with the query : ' + req.params.track);
@@ -216,8 +221,10 @@ var getMetaData = function (tracknamePlain, callback) {
     //  Then we query lastfm and try to find the metadata
     //  We only look for tracks matching the title
 
-    //  TEMP - Let's try to add the first word of the artist inside the query,
+    //  Let's try to add the first word of the artist inside the query,
     //  because for instance phunky data - fashion doesn't work even when retrieving 100 possible tracks....
+
+    //  Works fine this way, we can reduce the number of tracks needed for match
 
     var options = {
         name: nameClean,
@@ -303,7 +310,7 @@ var searchTrack = function (options, callback) {
     var options = {
         host: LastFMURL,
         port: 80,
-        path: '/2.0/?method=track.search&limit=100&track=' + track + '&artist=' + artist + '&api_key=' + LastFMKey + '&format=json'
+        path: '/2.0/?method=track.search&limit=20&track=' + track + '&artist=' + artist + '&api_key=' + LastFMKey + '&format=json'
     };
 
     console.log('URL : ' + options.host + options.path);
@@ -346,7 +353,7 @@ var searchTrack = function (options, callback) {
 };
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-//  Function that get the results from a search query to Youtube API
+//  Get the similar tracks to one track
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 var searchSimilarTracksByTrack = function (track, callback) {

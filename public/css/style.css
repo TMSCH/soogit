@@ -20,6 +20,11 @@ body {
 	padding-right: 20px;
 }
 
+.searching-needed {
+	color: red;
+	font-weight: bold;
+}
+
 #search-list-container {
 	width: 400px;
 	position: fixed;

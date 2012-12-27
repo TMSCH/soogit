@@ -3,6 +3,8 @@ window.NavbarView = Backbone.View.extend({
 	count: 0,
 
 	searchListItems: [],
+
+	lastSearch: '',
 	
 	events: {
 		"click #search-track": "newSearch",
@@ -12,7 +14,7 @@ window.NavbarView = Backbone.View.extend({
 		"mouseover #search-list-container": "show",
 		"click #trackname": "isNotEmpty",
 		"click #search-list td": "hide",
-        //"input #trackname" : "queryChanged",
+        "input #trackname" : "queryChanged",
 	},
 
 	initialize: function() {
@@ -24,7 +26,7 @@ window.NavbarView = Backbone.View.extend({
 
 	render: function() {
 		$(this.el).html(this.template());
-
+		this.refresh();
 		return this;
 	},
 
@@ -104,7 +106,11 @@ window.NavbarView = Backbone.View.extend({
 	queryChanged: function() {
 		this.count++;
         var query = $("#trackname", this.el).val();
-        if (this.count % 10 == 0 || query[query.length - 1] == " ") this.newSearch();
+        if (query.match(/ $/)){
+        	this.newSearch();
+        } else {
+        	$('#search-track', this.el).addClass('searching-needed');
+        }
 	},
 
 	/*-----------------------------------------------------------------------------------------------------
@@ -112,24 +118,34 @@ window.NavbarView = Backbone.View.extend({
 	-----------------------------------------------------------------------------------------------------*/
 
 	newSearch: function () {
-		$('.search-loader').removeClass('hidden');
-        var self = this;
-        searchVideos(
-        {
-        	query: $("#trackname", this.el).val(),
-        	maxResults: 20
-        },
-        function(tracks){
-        	$('.search-loader').addClass('hidden');
+		var query = $("#trackname", this.el).val().trim();
 
-        	if (tracks == null) return null;
+		//	If the query has changed
+		if (query != this.lastSearch){
+			
+			$('#search-track', this.el).removeClass('searching-needed');
+			this.lastSearch = query;
+			//	We display the search loader
+			$('.search-loader').removeClass('hidden');
 
-        	//	Adding the result to the model
-        	self.model.reset();
-        	self.model.trigger('remove');
-        	self.model.add(tracks);
-        	return;
-        }); 
+	        var self = this;
+	        searchVideos(
+	        {
+	        	query: $("#trackname", this.el).val().trim(),
+	        	maxResults: 20
+	        },
+	        function(tracks){
+	        	$('.search-loader').addClass('hidden');
+
+	        	if (tracks == null) return null;
+
+	        	//	Adding the result to the model
+	        	self.model.reset();
+	        	self.model.trigger('remove');
+	        	self.model.add(tracks);
+	        	return;
+	        });
+	    }
     },
 
 });

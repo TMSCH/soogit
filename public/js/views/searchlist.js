@@ -4,6 +4,8 @@ window.NavbarView = Backbone.View.extend({
 
 	searchListItems: [],
 
+	suggestQueries: [],
+
 	lastSearch: '',
 	
 	events: {
@@ -15,6 +17,7 @@ window.NavbarView = Backbone.View.extend({
 		"click #trackname": "isNotEmpty",
 		"click #search-list td": "hide",
         "input #trackname" : "queryChanged",
+        "autocompleteselect #trackname" : "newSearch",
 	},
 
 	initialize: function() {
@@ -26,6 +29,9 @@ window.NavbarView = Backbone.View.extend({
 
 	render: function() {
 		$(this.el).html(this.template());
+		$('#trackname', this.el).autocomplete({
+			source: this.suggestQueries,
+		});
 		this.refresh();
 		return this;
 	},
@@ -106,11 +112,34 @@ window.NavbarView = Backbone.View.extend({
 	queryChanged: function() {
 		this.count++;
         var query = $("#trackname", this.el).val();
-        if (query.match(/ $/)){
+        /*if (query.match(/ $/)){
         	this.newSearch();
         } else {
         	$('#search-track', this.el).addClass('searching-needed');
-        }
+        }*/
+
+        //	AUTO COMPLETE :::::: http://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=QUERY
+        //
+        //	Answers formatting, js file containing a JSON :
+        //	window.google.ac.h(["cherokee tak",[["cherokee take care of you",0,[]],
+        //	["cherokee take care of you remix",0,[]],["cherokee take",0,[]],["cherokee take care of you live",0,[]],
+        //	["cherokee take off",0,[]],["piper cherokee take off",0,[5]]],{"k":1,"q":"WnwK5SSeBruIXriutemVq24xsW4"}])
+		//
+
+		var url = 'http://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=' + encodeURIComponent(query);
+		var self = this;
+		$.ajax(url, {
+			dataType: 'jsonp',
+			success: function (data) {
+				if (typeof data[1] !== undefined){
+					self.suggestQueries = [];
+					$.each(data[1], function (key, val){
+						self.suggestQueries.push(val[0]);
+					});
+				}
+				$('#trackname', self.el).autocomplete( 'option', {source: self.suggestQueries} );
+			}
+		});
 	},
 
 	/*-----------------------------------------------------------------------------------------------------

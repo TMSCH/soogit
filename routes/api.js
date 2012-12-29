@@ -370,7 +370,7 @@ var searchSimilarTracksByTrack = function (track, callback) {
     var options = {
         host: LastFMURL,
         port: 80,
-        path: '/2.0/?method=track.getSimilar&api_key=' + LastFMKey + '&format=json&limit=19'
+        path: '/2.0/?method=track.getSimilar&api_key=' + LastFMKey + '&format=json&limit=20'
     };
 
     if (track.mbid)

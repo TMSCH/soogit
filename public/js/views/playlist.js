@@ -11,17 +11,19 @@ window.PlaylistView = Backbone.View.extend({
 		//this.model.on('remove', this.updatePlaylist, this);
 		//this.model.on('reset', this.render, this);
 		//this.model.on('remove', this.render, this);
-		this.model.on('update', this.playlistUpdated, this);
-		this.model.on('get-video', this.gettingVideo, this);
-		this.model.on('empty', this.render, this);
+		playlist.on('update', this.playlistUpdated, this);
+		playlist.on('get-video', this.gettingVideo, this);
+		playlist.on('empty', this.render, this);
 	},
 
 	render: function() {
 		if (this.model.length > 0){
 			track = this.model.at(0).toJSON();
 			track.onPlaylist = this.model.length;
+		} else if(this.model.beingGenerated) {
+			track = {loadingPlaylist: true}
 		} else {
-			track = {}
+			track = {};
 		}
 		$(this.el).html(this.template(track));
 

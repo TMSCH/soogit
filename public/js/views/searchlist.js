@@ -16,6 +16,7 @@ window.NavbarView = Backbone.View.extend({
 		"mouseover #search-list-container": "show",
 		"click #trackname": "isNotEmpty",
 		"click #search-list td": "hide",
+		"paste #trackname" : "pastedInput",
         "input #trackname" : "queryChanged",
         "autocompleteselect #trackname" : "newSearch",
 	},
@@ -31,7 +32,7 @@ window.NavbarView = Backbone.View.extend({
 		$(this.el).html(this.template());
 		$('#trackname', this.el).autocomplete({
 			source: this.suggestQueries,
-		});
+		}).tooltip();
 		this.refresh();
 		return this;
 	},
@@ -94,30 +95,33 @@ window.NavbarView = Backbone.View.extend({
 	},
 
 	show: function (e) {
-		if ($('#search-list-container', this.el).hasClass('retracted')) {
+		if ($('#search-list-container', this.el).hasClass('retracted') && this.model.length > 0) {
 			$('#search-list-container', this.el).animate({'right': '0px', 'opacity': '1'}).removeClass('retracted').removeClass('hidden');
+		} else if (this.model.length == 0) {
+			$('#trackname').tooltip('open');
 		}
 	},
 
 	isNotEmpty: function(e) {
+		$('#trackname').tooltip('open');
 		if ($(e.target).val() != '') this.show();
 	},
 
 	isSubmit: function (e) {
 		if (e.keyCode === 13){
+			$('#trackname').autocomplete('close');
 			this.newSearch();
 		}
 	},
 
-	queryChanged: function() {
-		this.count++;
-        var query = $("#trackname", this.el).val();
-        /*if (query.match(/ $/)){
-        	this.newSearch();
-        } else {
-        	$('#search-track', this.el).addClass('searching-needed');
-        }*/
+	pastedInput: function () {
+		var self = this;
+		setTimeout(function() {
+			self.newSearch();
+		}, 4);
+	},
 
+	queryChanged: function() {
         //	AUTO COMPLETE :::::: http://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=QUERY
         //
         //	Answers formatting, js file containing a JSON :
@@ -126,20 +130,29 @@ window.NavbarView = Backbone.View.extend({
         //	["cherokee take off",0,[]],["piper cherokee take off",0,[5]]],{"k":1,"q":"WnwK5SSeBruIXriutemVq24xsW4"}])
 		//
 
-		var url = 'http://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=' + encodeURIComponent(query);
-		var self = this;
-		$.ajax(url, {
-			dataType: 'jsonp',
-			success: function (data) {
-				if (typeof data[1] !== undefined){
-					self.suggestQueries = [];
-					$.each(data[1], function (key, val){
-						self.suggestQueries.push(val[0]);
-					});
+		$('#trackname').tooltip('close');
+
+		this.count++;
+
+        if (this.count > 2) {
+        	this.count = 0;
+        	var query = $("#trackname", this.el).val();
+
+			var url = 'http://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=' + encodeURIComponent(query);
+			var self = this;
+			$.ajax(url, {
+				dataType: 'jsonp',
+				success: function (data) {
+					if (typeof data[1] !== undefined){
+						self.suggestQueries = [];
+						$.each(data[1], function (key, val){
+							self.suggestQueries.push(val[0]);
+						});
+					}
+					$('#trackname', self.el).autocomplete( 'option', {source: self.suggestQueries} );
 				}
-				$('#trackname', self.el).autocomplete( 'option', {source: self.suggestQueries} );
-			}
-		});
+			});
+		}
 	},
 
 	/*-----------------------------------------------------------------------------------------------------
@@ -147,7 +160,8 @@ window.NavbarView = Backbone.View.extend({
 	-----------------------------------------------------------------------------------------------------*/
 
 	newSearch: function () {
-		var query = $("#trackname", this.el).val().trim();
+		var query = $("#trackname", this.el).val().replace(/[^\w\d]/gi, ' ').replace(/ {2,}/gi, ' ').trim();
+		//console.log(query);
 
 		//	If the query has changed
 		if (query != this.lastSearch){
@@ -160,13 +174,17 @@ window.NavbarView = Backbone.View.extend({
 	        var self = this;
 	        searchVideos(
 	        {
-	        	query: $("#trackname", this.el).val().trim(),
+	        	query: query,
 	        	maxResults: 20
 	        },
 	        function(tracks){
 	        	$('.search-loader').addClass('hidden');
 
-	        	if (tracks == null) return null;
+	        	if (tracks == null) {
+	        		$('#trackname').attr('title', 'No video found');
+	        		$('#trackname').tooltip('open');
+	        		return null;
+	        	}
 
 	        	//	Adding the result to the model
 	        	self.model.reset();
@@ -174,6 +192,9 @@ window.NavbarView = Backbone.View.extend({
 	        	self.model.add(tracks);
 	        	return;
 	        });
+	    } else if (this.model.length == 0) {
+	    	$('#trackname').attr('title', 'No video found');
+	        $('#trackname').tooltip('open');
 	    }
     },
 
@@ -196,6 +217,7 @@ window.SearchListItemView = Backbone.View.extend({
 	addTrackToPlaylist: function() {
 		//	We reset the playlist so the first track is the one selected
 		playlist.reset(this.model);
+		loadNextVideo(playlist.shift());
 	}
 });
 
@@ -226,6 +248,7 @@ window.searchVideos = function(options, callback) {
         //  Getting the response from Youtube API
         $.ajax({
             url: url,
+            dataType: 'jsonp',
             data: {q: query,
                     'max-results': maxResults,
                     alt: 'jsonc',
@@ -235,31 +258,31 @@ window.searchVideos = function(options, callback) {
                 var i = 0;
                 tracks = [];
 
+                //res = JSON.parse(res);
+
                 console.log("Query to Youtube API successfully retrieved.");
                 console.log(res);
-                while (trackData = res.data.items[i]) {
-                    var track = new Track({
-                        videoId: trackData.id,
-                        title: trackData.title,
-                        img: trackData.thumbnail.sqDefault,
-                        durationInSec: trackData.duration,
-                        views: trackData.viewCount,
-                        uploaded_raw: trackData.uploaded.substr(0, 10),
-                        description: trackData.description,
-                        youtubeData: true,
-                    });
+                if (res.data.items) {
+	                while (trackData = res.data.items[i]) {
+	                    var track = new Track({
+	                        videoId: trackData.id,
+	                        title: trackData.title,
+	                        img: trackData.thumbnail.sqDefault,
+	                        durationInSec: trackData.duration,
+	                        views: trackData.viewCount,
+	                        uploaded_raw: trackData.uploaded.substr(0, 10),
+	                        description: trackData.description,
+	                        youtubeData: true,
+	                    });
 
-                    tracks.push(track);
-                    i++;
-                }
-
-                if (i == 0){ //	Rare case we hope
-                	console.log('No result were returned with youtube query.')
-                	callback(null);
-                }
-                else
-                	callback(tracks);
-                return;
+	                    tracks.push(track);
+	                    i++;
+	                }
+	                callback(tracks);
+	            } else {
+	            	console.log("No results from the query...");
+	            	callback(null);
+	            }
             },
 
             error: function() {

@@ -32,7 +32,7 @@ window.Track = Backbone.Model.extend({
             this.set('uploaded', this.get('uploaded_raw').substr(0,10));
     },
 
-    searchOneVideo: function(callback) {
+    getYoutubeData: function(callback) {
         var self = this;
         searchVideos(
             {
@@ -76,6 +76,7 @@ window.Playlist = TrackCollection.extend({
     initialize: function() {
         this.on('reset', this.update, this);
         this.on('remove', this.update, this);
+        this.on('add', this.update, this);
     },
 
     update: function() {
@@ -83,7 +84,7 @@ window.Playlist = TrackCollection.extend({
             if (! this.at(0).has('videoId')){
                 this.trigger('get-video', 'start');
                 var self = this;
-                this.at(0).searchOneVideo(function(res){
+                this.at(0).getYoutubeData(function(res){
                     if (res)
                         self.trigger('get-video', 'success');
                     else {
@@ -130,6 +131,7 @@ window.Playlist = TrackCollection.extend({
                             if (track != null) self.push(track, {silent: true});
                             i++;
                         }
+                        self.trigger('add');
                         self.beingGenerated = false;
                         self.trigger('update', 'success');
                     } else {

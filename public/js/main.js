@@ -37,3 +37,15 @@ utils.loadTemplate(['NavbarView', 'SearchListItemView', 'PlaylistView'], functio
     app = new AppRouter();
     Backbone.history.start();
 });
+
+//  Idle handle
+$.idleTimer(5000);
+
+$(document).bind("idle.idleTimer", function(){
+    $('#navbar, #next-track-container').animate({opacity: 0.2});
+});
+
+
+$(document).bind("active.idleTimer", function(){
+    $('#navbar, #next-track-container').animate({opacity: 1});
+});

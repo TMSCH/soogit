@@ -1,4 +1,10 @@
-<% if (typeof title == "undefined" && (typeof name == "undefined" || name == '')) { %>
+<% if (typeof loadingPlaylist != 'undefined') { %>
+	<div id="next-track" class="not-disabled">
+		<div class="next-one">Next track :</div>
+		<img src="img/ajax-loader.gif" class="playlist-loader" />
+		<div class="playlist-loading-info">Loading playlist...</div>
+	</div>
+<% } else if (typeof title == "undefined" && (typeof name == "undefined" || name == '')) { %>
 	<div id="next-track" class="disabled">
 		<div>No track in the playlist : add another one !</div>
 	</div>
@@ -10,17 +16,18 @@
 		<% if (typeof title == "undefined" && typeof name != 'undefined') { %>
 			<%= artist %> - <%= name %>
 		<% } else { %>
-			<%= title %>
+			<%= title.length > 30 ? title.substr(0, 27) + '...' : title %>
 		<% } %>
 		</div>
 		<div class="divider"></div>
 		<% if (typeof youtubeData != 'undefined') { %>
 			<div class="play-it link">Play now</div>
-			<div class="divider"></div>
 		<% } else { %>
-			<div class="divider"></div>
-			<img src="img/ajax-loader.gif" class="video-loader" /> Loading video
+			<div>
+				<img src="img/ajax-loader.gif" class="video-loader" /> Loading video
+			</div>
 		<% } %>
+		<div class="divider"></div>
 		<div class="playlist-info">
 			<% if (typeof onPlaylist != 'undefined') { %>
 				<!--Playlist : <%= onPlaylist %> tracks-->

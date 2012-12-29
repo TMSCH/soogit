@@ -1,9 +1,12 @@
 <tr>
-	<td class="img"><img src="<%= img %>" /></td>
+	<td class="img">
+		<div class="add-to-playlist ui-corner-all ui-state-default"><span class="ui-icon ui-icon-circle-plus"></span></div>
+		<img src="<%= img %>" />
+	</td>
 	<td class="texte">
 		<div class="name"><%= title %></div>
 		<div class="description">
-			<%= description %>
+			<%= description.length > 120 ? description.substr(0, 117) + '...' : description %>
 			<br />
 			Views : <%= views %> - Upload date : <%= uploaded %>
 			<br />

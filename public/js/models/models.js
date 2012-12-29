@@ -21,10 +21,6 @@ window.Track = Backbone.Model.extend({
 
     format: function() {
         //  Some formatting
-        if (this.has('description'))
-            if (this.get('description').length > 120)
-                this.set('description', this.get('description').substr(0, 117) + '...');
-
         if (this.has('durationInSec'))
             this.set('duration', Math.floor(this.get('durationInSec') / 60) + 'min' + this.get('durationInSec') % 60);
 

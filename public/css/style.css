@@ -49,6 +49,7 @@ body {
 #search-list td {
 	border-bottom: 1px solid #DDD;
 	padding: 4px;
+	position: relative;
 }
 
 #search-list .img {
@@ -71,6 +72,12 @@ body {
 
 #search-list .description {
 	font-size: 10px;
+}
+
+#search-list .add-to-playlist {
+	position: absolute;
+	top: 10px;
+	left: 10px;
 }
 
 #next-track-container {

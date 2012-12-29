@@ -16,7 +16,7 @@
 		<% if (typeof title == "undefined" && typeof name != 'undefined') { %>
 			<%= artist %> - <%= name %>
 		<% } else { %>
-			<%= title.length > 30 ? title.substr(0, 27) + '...' : title %>
+			<%= title.length > 50 ? title.substr(0, 47) + '...' : title %>
 		<% } %>
 		</div>
 		<div class="divider"></div>

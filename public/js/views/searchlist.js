@@ -61,6 +61,17 @@ window.NavbarView = Backbone.View.extend({
 				this.searchListItems.push(new SearchListItemView({model: this.model.at(i)}));
 				$('#search-list', this.el).append(this.searchListItems[i].render().el);
 			}
+
+			//	Mosueover effect of the add to playlist icon
+			$( "#search-list .add-to-playlist" ).hover(
+				function() {
+					$( this ).addClass( "ui-state-hover" );
+				},
+				function() {
+					$( this ).removeClass( "ui-state-hover" );
+				}
+			);
+
 		} else {
 			//We remove all the old views
 			//console.log('Removing all the search results views');
@@ -97,6 +108,7 @@ window.NavbarView = Backbone.View.extend({
 	show: function (e) {
 		if ($('#search-list-container', this.el).hasClass('retracted') && this.model.length > 0) {
 			$('#search-list-container', this.el).animate({'right': '0px', 'opacity': '1'}).removeClass('retracted').removeClass('hidden');
+			$('#trackname').autocomplete('close');
 		} else if (this.model.length == 0) {
 			$('#trackname').tooltip('open');
 		}
@@ -140,18 +152,20 @@ window.NavbarView = Backbone.View.extend({
 
 			var url = 'http://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=' + encodeURIComponent(query);
 			var self = this;
-			$.ajax(url, {
-				dataType: 'jsonp',
-				success: function (data) {
-					if (typeof data[1] !== undefined){
-						self.suggestQueries = [];
-						$.each(data[1], function (key, val){
-							self.suggestQueries.push(val[0]);
-						});
+			if (this.lastSearch != $("#trackname", this.el).val().replace(/[^\w\d]/gi, ' ').replace(/ {2,}/gi, ' ').trim()) {
+				$.ajax(url, {
+					dataType: 'jsonp',
+					success: function (data) {
+						if (typeof data[1] !== undefined){
+							self.suggestQueries = [];
+							$.each(data[1], function (key, val){
+								self.suggestQueries.push(val[0]);
+							});
+						}
+						$('#trackname', self.el).autocomplete( 'option', {source: self.suggestQueries} );
 					}
-					$('#trackname', self.el).autocomplete( 'option', {source: self.suggestQueries} );
-				}
-			});
+				});
+			}
 		}
 	},
 
@@ -203,7 +217,7 @@ window.NavbarView = Backbone.View.extend({
 window.SearchListItemView = Backbone.View.extend({
 
 	events: {
-		'click tr': 'addTrackToPlaylist'
+		'click .add-to-playlist, td' : 'addTrackToPlaylist', // The order of the .add-to-playlist and td is important !!!
 	},
 
 	initialize: function() {
@@ -214,10 +228,14 @@ window.SearchListItemView = Backbone.View.extend({
 		return this;
 	},
 
-	addTrackToPlaylist: function() {
+	addTrackToPlaylist: function(e) {
+		e.stopPropagation();
 		//	We reset the playlist so the first track is the one selected
 		playlist.reset(this.model);
-		loadNextVideo(playlist.shift());
+		console.log($(e.currentTarget).hasClass('add-to-playlist'));
+		//	We check whether the 'add-to-playlist' link has been clicked, if not we load the video
+		if (! $(e.currentTarget).hasClass('add-to-playlist'))
+			loadNextVideo(playlist.shift());
 	}
 });
 

@@ -19,7 +19,7 @@ window.Track = Backbone.Model.extend({
                 this.getYoutubeData(function(res){
                     if (! res) {//  If we could not load a video from Youtube, we cannot keep it in the playlist
                         console.log('Removing one track which youtube data could not be found');
-                        self.destroy(); //  Does not seem to work
+                        self.destroy();
                     }
                 });
             } else { //   No youtube data, no name and artist, but some data given : we can't use that !

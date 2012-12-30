@@ -250,8 +250,8 @@ var getMetaData = function (tracknamePlain, callback) {
         
         //  We compare the artist with the one we have for every track found
         while (tracks[i]) {
-            //  Both the artist and the name should be close
-            if (compare(artistClean, tracks[i].artist) && compare(nameClean, tracks[i].name)) {
+            //  Both the artist and the name should be close - TEMP : only the artist counts, this way the top result is prefered
+            if (compare(artistClean, tracks[i].artist)) { // && compare(nameClean, tracks[i].name)) {
                 break;
             }
             i++;

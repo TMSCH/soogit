@@ -370,7 +370,7 @@ var searchSimilarTracksByTrack = function (track, callback) {
     var options = {
         host: LastFMURL,
         port: 80,
-        path: '/2.0/?method=track.getSimilar&api_key=' + LastFMKey + '&format=json&limit=20'
+        path: '/2.0/?method=track.getSimilar&api_key=' + LastFMKey + '&format=json&limit=60' // 60 results, and we select only 20 to have a kind of random
     };
 
     if (track.mbid)
@@ -400,13 +400,14 @@ var searchSimilarTracksByTrack = function (track, callback) {
                 }
 
                 var tracks = [];
-                var i = 0;
-                while (tracksMatched[i]) {
-                    tracks[i] = {name: tracksMatched[i].name, artist: tracksMatched[i].artist.name, mbid: tracksMatched[i].mbid};
-                    i++;
-                }
-                console.log('Tracks similar :');
+                var init = Math.floor(Math.random() * Math.max(tracksMatched.length - 20, 0)); //  Random number between 0 and number of results - 20
+                for (var i = init; i < init + 20; i++) {
+                    tracks.push({name: tracksMatched[i].name, artist: tracksMatched[i].artist.name, mbid: tracksMatched[i].mbid});
+                };
+                //  Randomizing the order
                 tracks = randomSort(tracks);
+
+                console.log('Tracks similar :');
                 console.log(tracks);
 
                 callback(tracks);

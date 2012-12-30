@@ -7,10 +7,12 @@ window.PlaylistView = Backbone.View.extend({
 
 	initialize: function() {
 		this.render();
-		//this.model.on('reset', this.updatePlaylist, this);
-		//this.model.on('remove', this.updatePlaylist, this);
-		//this.model.on('reset', this.render, this);
-		//this.model.on('remove', this.render, this);
+
+		//	Any change in the playlist happens we render the playlist
+		this.listenTo(playlist, "change", this.render);
+		this.listenTo(playlist, 'remove', this.render);
+
+		//	Some messages received by the playlist
 		playlist.on('update', this.playlistUpdated, this);
 		playlist.on('get-video', this.gettingVideo, this);
 		playlist.on('empty', this.render, this);
@@ -23,7 +25,7 @@ window.PlaylistView = Backbone.View.extend({
 		} else if(this.model.beingGenerated) {
 			track = {loadingPlaylist: true}
 		} else {
-			track = {};
+			track = {empty: true};
 		}
 		$(this.el).html(this.template(track));
 
@@ -63,7 +65,7 @@ window.PlaylistView = Backbone.View.extend({
 	deleteNextTrack: function() {
 		if (this.model.length > 0){
 			console.log('Deleting next track');
-			this.model.shift();
+			playlist.shift();
 		}
 	}
 });

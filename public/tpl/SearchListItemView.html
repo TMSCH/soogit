@@ -4,11 +4,11 @@
 		<img src="<%= img %>" />
 	</td>
 	<td class="texte">
-		<div class="name"><%= title %></div>
+		<div class="name"><%= videoTitle %></div>
 		<div class="description">
 			<%= description.length > 120 ? description.substr(0, 117) + '...' : description %>
 			<br />
-			Views : <%= views %> - Upload date : <%= uploaded %>
+			Views : <%= views %> - Upload date : <%= uploaded.substr(0,10) %>
 			<br />
 			Duration : <%= duration %>
 		</div>

@@ -1,3 +1,5 @@
+window.loadingVideoFromYoutube = false;
+
 window.Track = Backbone.Model.extend({
 
     url: "/tracks",
@@ -6,10 +8,22 @@ window.Track = Backbone.Model.extend({
 
     potentialTracks: {},
 
-    initialize: function () {
+    initialize: function (attrs, options) {
         //  Every time the model change we format the content
         this.on('change', this.format, this);
         this.format();
+        //  Now we check what data we have : if we don't have youtube data then we load them :
+        if (attrs != null) {
+            if (this.has('name') && this.has('artist')) {
+                var self = this;
+                this.getYoutubeData(function(res){
+                    if (! res) {//  If we could not load a video from Youtube, we cannot keep it in the playlist
+                        self.destroy();
+                    }
+                });
+            } else //   No youtube data, no name and artist, but some data given : we can't use that !
+                this.destroy();
+        }
     },
 
     validate: function (attrs) {
@@ -23,32 +37,59 @@ window.Track = Backbone.Model.extend({
         //  Some formatting
         if (this.has('durationInSec'))
             this.set('duration', Math.floor(this.get('durationInSec') / 60) + 'min' + this.get('durationInSec') % 60);
+    },
 
-        if (this.has('uploaded_raw'))
-            this.set('uploaded', this.get('uploaded_raw').substr(0,10));
+    /*-----------------------------------------------------------------------------------------------------
+    //  This method will parse JSONC data received by Youtube to fit our model
+    -----------------------------------------------------------------------------------------------------*/
+
+    addDataFromYoutube: function(data) {
+        if (data != null) {
+            this.set({
+                'videoId': data['id'],
+                'uploaded': data['uploaded'],
+                'category': data['category'],
+                'videoTitle': data['title'],
+                'description': data['description'],
+                'img': data['thumbnail']['sqDefault'],
+                'durationInSec': data['duration'],
+                'views': data['viewCount'],
+                'youtubeData': true,
+            });
+        }
     },
 
     getYoutubeData: function(callback) {
         var self = this;
-        searchVideos(
-            {
-                query: this.get('name') + ' ' + this.get('artist'),
-                maxResults: 1
-            },
-            function(tracks) {
-                console.log(tracks[0].toJSON());
-                if (tracks == null || tracks.length == 0){
-                    callback(false);
+        if (! this.has('videoId')) {
+            searchVideos(
+                {
+                    query: this.get('name') + ' ' + this.get('artist'),
+                    maxResults: 1
+                },
+                function(tracks) {
+                    console.log(tracks[0]);
+                    if (tracks == null || tracks.length == 0){
+                        callback(false);
+                        return;
+                    }
+
+                    //  We parse the data
+                    self.addDataFromYoutube(tracks[0]);
+                    
+                    callback(true);
                     return;
                 }
-
-                $.each(tracks[0].toJSON(), function (key, val){
-                    self.set(key, val);
-                });
-                callback(true);
-                return;
-            }
-        );
+            );
+        } else if (! this.has('youtubeData')) {
+            $.getJSON('https://gdata.youtube.com/feeds/api/videos/' + this.get('videoId') + '?v=2&alt=jsonc', function(data) {
+                if (data.data) {
+                    self.addDataFromYoutube(data.data);
+                    callback(true);
+                    return;
+                } else self.destroy(); //   Error while retrieving video : the id must be wrong
+            })
+        }
     },
 
     defaults: {
@@ -61,7 +102,27 @@ window.TrackCollection = Backbone.Collection.extend({
 
     model: Track,
 
-    url: "/tracks"
+    url: "/tracks",
+
+    /*-----------------------------------------------------------------------------------------------------
+    //  Specific loader from raw youtube data : it's better to parse here according to the model we chose
+    //  And the type of data we received (json, jsonc...)
+    //
+    //  We chose to use the JSONC type, because it's simpler to parse yeah
+    -----------------------------------------------------------------------------------------------------*/
+
+    addTracksFromYoutube: function(tracks) {
+        var len = tracks.length;
+        if (tracks != null) {
+            for (var i = 0; i < len; i++) {
+                var track = new Track();
+                //  We use the method from our model to parse Youtube data
+                track.addDataFromYoutube(tracks[i]);
+                this.add(track, {silent: true});
+            };
+            this.trigger('add');
+        }
+    },
 
 });
 
@@ -75,20 +136,17 @@ window.Playlist = TrackCollection.extend({
         this.on('add', this.update, this);
     },
 
+    /*-----------------------------------------------------------------------------------------------------
+    //  Some cursors to navigate in the playlist :
+    //  This way we can store past tracks
+    -----------------------------------------------------------------------------------------------------*/
+
+    /*-----------------------------------------------------------------------------------------------------
+    //  When there's no more track in the playlist, load similar tracks
+    -----------------------------------------------------------------------------------------------------*/
+
     update: function() {
         if (this.length > 0) {
-            if (! this.at(0).has('videoId')){
-                this.trigger('get-video', 'start');
-                var self = this;
-                this.at(0).getYoutubeData(function(res){
-                    if (res)
-                        self.trigger('get-video', 'success');
-                    else {
-                        self.trigger('get-video', 'error');
-                        self.shift();
-                    }
-                });
-            }
             if (this.length == 1) {
                 if (! this.beingGenerated) {
                     this.beingGenerated = true;
@@ -98,16 +156,20 @@ window.Playlist = TrackCollection.extend({
         } else this.trigger('empty');
     },
 
+    /*-----------------------------------------------------------------------------------------------------
+    //  Send a get request to the server that will get similar tracks to the next one on the playlist
+    -----------------------------------------------------------------------------------------------------*/
+
     getSimilarTracks: function() {
             this.trigger('update', 'start');
 
             //  Check for the information we have, according to that we'll ask a specific request
             if (this.at(0).has('mbid'))
                 var url = 'playlistByMBID/' + encodeURIComponent(this.at(0).get('mbid'));
-            else if (this.at(0).has('title'))
-                var url = 'playlist/' + encodeURIComponent(this.at(0).get('title'));
+            else if (this.at(0).has('videoTitle'))
+                var url = 'playlist/' + encodeURIComponent(this.at(0).get('videoTitle'));
             else if (this.at(0).has('artist'))
-                var url = 'playlist/' + encodeURIComponent(this.at(0).get('artist')) + '+' + encodeURIComponent(this.at(0).get('name'));
+                var url = 'playlist/' + encodeURIComponent(this.at(0).get('artist')) + '-' + encodeURIComponent(this.at(0).get('name'));
             
             var self = this;
 

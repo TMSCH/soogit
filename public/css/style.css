@@ -7,10 +7,21 @@ body {
 	text-align: center;
 }
 
+#main-container {
+	/*position: absolute;
+	top: 0px;
+	left: 0px;*/
+	padding: 0;
+	margin:0;
+}
+
 #player-container {
+	margin: 0;
+	padding: 0;
 	text-align: center;
-	height: 480px;
-	margin-top: 30px;
+	margin-left: auto;
+	/*height: 480px;
+	margin-top: 30px;*/
 }
 
 .navbar-inner {
@@ -159,4 +170,41 @@ body {
 
 #next-track a:hover{
 	text-decoration: underline;
+}
+
+/* HELP STYLE */
+
+.mask {
+	height: 100%;
+	width: 100%;
+	background-color: #000;
+	opacity: 0.7;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
+#help-container {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	text-align: center;
+	width: 100%;
+}
+
+#help-container .helpText {
+	opacity: 1;
+	margin-top: 150px;
+	width: 400px;
+	background-color: #DDD;
+	border-radius: 10px;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 20px;
+	text-align: left;
+}
+
+#help-container .helpText .close {
+	float: right;
+	font-size: 14px;
 }

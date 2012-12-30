@@ -4,7 +4,7 @@
 		<img src="img/ajax-loader.gif" class="playlist-loader" />
 		<div class="playlist-loading-info">Loading playlist...</div>
 	</div>
-<% } else if (typeof title == "undefined" && (typeof name == "undefined" || name == '')) { %>
+<% } else if (typeof empty != "undefined") { %>
 	<div id="next-track" class="disabled">
 		<div>No track in the playlist : add another one !</div>
 	</div>
@@ -13,10 +13,10 @@
 		<div class="next-one">Next track :</div>
 
 		<div class="trackname">
-		<% if (typeof title == "undefined" && typeof name != 'undefined') { %>
+		<% if (typeof videoTitle == "undefined" && typeof name != 'undefined' && typeof artist != 'undefined') { %>
 			<%= artist %> - <%= name %>
 		<% } else { %>
-			<%= title.length > 50 ? title.substr(0, 47) + '...' : title %>
+			<%= videoTitle.length > 50 ? videoTitle.substr(0, 47) + '...' : videoTitle %>
 		<% } %>
 		</div>
 		<div class="divider"></div>

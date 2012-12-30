@@ -12,6 +12,7 @@ var AppRouter = Backbone.Router.extend({
 
     routes: {
         ""                  : "initialize",
+        "help"              : "help",
     },
 
     initialize: function () {
@@ -31,9 +32,13 @@ var AppRouter = Backbone.Router.extend({
         $('#navbar').html(new NavbarView({model: trackList}).el);
     },
 
+    help: function() {
+        $('#main-container').append(new HelpView().el);
+    },
+
 });
 
-utils.loadTemplate(['NavbarView', 'SearchListItemView', 'PlaylistView'], function() {
+utils.loadTemplate(['NavbarView', 'SearchListItemView', 'PlaylistView', 'HelpView'], function() {
     app = new AppRouter();
     Backbone.history.start();
 });

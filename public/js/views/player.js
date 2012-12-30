@@ -2,8 +2,8 @@
 //  Youtube Player API
 -----------------------------------------------------------------------------------------------------*/
 
-var WIDTH = 853;
-var HEIGHT = 480;
+var HEIGHT = window.innerHeight - 120;
+var WIDTH = Math.round(HEIGHT * 640 / 360);
 
 var tag = document.createElement('script');
 tag.src = "//www.youtube.com/iframe_api";
@@ -22,7 +22,8 @@ function onYouTubeIframeAPIReady() {
 	    videoId: 'XdvZLcYc8ag',
 	    events: {
 	      'onReady': onPlayerReady,
-	      'onStateChange': onPlayerStateChange
+	      'onStateChange': onPlayerStateChange,
+	      'onError' : onPlayerError,
 	    }
 	});
 }
@@ -37,6 +38,10 @@ function onPlayerStateChange(event) {
     	if (playlist.length > 0)
     		loadNextVideo(playlist.shift());
     }
+}
+
+function onPlayerError() {
+	loadNextVideo(playlist.shift());
 }
 
 function loadNextVideo(track) {

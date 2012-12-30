@@ -102,7 +102,7 @@ window.NavbarView = Backbone.View.extend({
 	},
 
 	hide: function() {
-		$('#search-list-container', this.el).animate({'right': '-380px', 'opacity': '0.50'}).addClass('retracted');//.addClass('hidden');
+		$('#search-list-container', this.el).animate({'right': '-350px', 'opacity': '0.50'}).addClass('retracted');//.addClass('hidden');
 	},
 
 	show: function (e) {
@@ -144,6 +144,9 @@ window.NavbarView = Backbone.View.extend({
 
 		$('#trackname').tooltip('close');
 
+		if (this.lastSearch != $("#trackname", this.el).val())
+			$('#trackname').autocomplete('enable');
+
 		this.count++;
 
         if (this.count > 2) {
@@ -152,7 +155,7 @@ window.NavbarView = Backbone.View.extend({
 
 			var url = 'http://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=' + encodeURIComponent(query);
 			var self = this;
-			if (this.lastSearch != $("#trackname", this.el).val().replace(/[^\w\d]/gi, ' ').replace(/ {2,}/gi, ' ').trim()) {
+			if (this.lastSearch != $("#trackname", this.el).val()) {
 				$.ajax(url, {
 					dataType: 'jsonp',
 					success: function (data) {
@@ -174,27 +177,28 @@ window.NavbarView = Backbone.View.extend({
 	-----------------------------------------------------------------------------------------------------*/
 
 	newSearch: function () {
-		var query = $("#trackname", this.el).val().replace(/[^\w\d]/gi, ' ').replace(/ {2,}/gi, ' ').trim();
+		$('#trackname').autocomplete('disable');
 		//console.log(query);
 
 		//	If the query has changed
-		if (query != this.lastSearch){
+		if ($("#trackname", this.el).val() != this.lastSearch){
+			this.lastSearch = $("#trackname", this.el).val();
 			
 			$('#search-track', this.el).removeClass('searching-needed');
-			this.lastSearch = query;
 			//	We display the search loader
 			$('.search-loader').removeClass('hidden');
 
 	        var self = this;
 	        searchVideos(
 	        {
-	        	query: query,
+	        	query: $("#trackname", this.el).val().replace(/[^\w\d]/gi, ' ').replace(/ {2,}/gi, ' ').trim(),
 	        	maxResults: 20
 	        },
 	        function(tracks){
 	        	$('.search-loader').addClass('hidden');
 
 	        	if (tracks == null) {
+	        		//	Tooltip to say we haven't found any videos
 	        		$('#trackname').attr('title', 'No video found');
 	        		$('#trackname').tooltip('open');
 	        		return null;
@@ -203,7 +207,7 @@ window.NavbarView = Backbone.View.extend({
 	        	//	Adding the result to the model
 	        	self.model.reset();
 	        	self.model.trigger('remove');
-	        	self.model.add(tracks);
+	        	self.model.addTracksFromYoutube(tracks);
 	        	return;
 	        });
 	    } else if (this.model.length == 0) {
@@ -281,14 +285,14 @@ window.searchVideos = function(options, callback) {
                 console.log("Query to Youtube API successfully retrieved.");
                 console.log(res);
                 if (res.data.items) {
-	                while (trackData = res.data.items[i]) {
+	                /*while (trackData = res.data.items[i]) {
 	                    var track = new Track({
 	                        videoId: trackData.id,
 	                        title: trackData.title,
 	                        img: trackData.thumbnail.sqDefault,
 	                        durationInSec: trackData.duration,
 	                        views: trackData.viewCount,
-	                        uploaded_raw: trackData.uploaded.substr(0, 10),
+	                        uploaded_raw: trackData.uploaded,
 	                        description: trackData.description,
 	                        youtubeData: true,
 	                    });
@@ -296,7 +300,8 @@ window.searchVideos = function(options, callback) {
 	                    tracks.push(track);
 	                    i++;
 	                }
-	                callback(tracks);
+	                callback(tracks);*/
+	                callback(res.data.items);
 	            } else {
 	            	console.log("No results from the query...");
 	            	callback(null);

@@ -18,12 +18,14 @@ window.PlaylistView = Backbone.View.extend({
 		playlist.on('empty', this.render, this);
 	},
 
-	render: function() {
+	render: function(options) {
 		if (this.model.length > 0){
 			track = this.model.at(0).toJSON();
 			track.onPlaylist = this.model.length;
 		} else if(this.model.beingGenerated) {
-			track = {loadingPlaylist: true}
+			track = {loadingPlaylist: true};
+		} else if (options && options.loadingPlaylistError) {
+			track = {loadingPlaylistError: true};
 		} else {
 			track = {empty: true};
 		}
@@ -42,6 +44,14 @@ window.PlaylistView = Backbone.View.extend({
 		} else if (message == 'error') {
 			$('.playlist-loader').addClass('hidden');
 	        $('.playlist-info').html('We could not find similar tracks, sorry');
+	        if (playlist.length == 0) {	//	If we just added a track to the playlist which did not retrieve any similar tracks
+	        	console.log('Error...');
+	        	this.render({loadingPlaylistError: true});
+	        	var self = this;
+	        	setTimeout(function(){
+	        		self.render();
+	        	}, 2000); //	After 2 seconds we remove the message
+	        }
 		}
 	},
 

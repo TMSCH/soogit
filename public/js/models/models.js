@@ -14,15 +14,17 @@ window.Track = Backbone.Model.extend({
         this.format();
         //  Now we check what data we have : if we don't have youtube data then we load them :
         if (attrs != null) {
-            if (this.has('name') && this.has('artist')) {
+            if ((this.has('name') && this.has('artist')) || this.has('videoId')) {
                 var self = this;
                 this.getYoutubeData(function(res){
                     if (! res) {//  If we could not load a video from Youtube, we cannot keep it in the playlist
-                        self.destroy();
+                        console.log('Removing one track which youtube data could not be found');
+                        self.destroy(); //  Does not seem to work
                     }
                 });
-            } else //   No youtube data, no name and artist, but some data given : we can't use that !
+            } else { //   No youtube data, no name and artist, but some data given : we can't use that !
                 this.destroy();
+            }
         }
     },
 
@@ -68,12 +70,12 @@ window.Track = Backbone.Model.extend({
                     maxResults: 1
                 },
                 function(tracks) {
-                    console.log(tracks[0]);
                     if (tracks == null || tracks.length == 0){
+                        self.set('youtubeDataError', 'true');
                         callback(false);
                         return;
                     }
-
+                    console.log(tracks[0]);
                     //  We parse the data
                     self.addDataFromYoutube(tracks[0]);
                     

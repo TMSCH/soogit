@@ -129,7 +129,28 @@ window.NavbarView = Backbone.View.extend({
 	pastedInput: function () {
 		var self = this;
 		setTimeout(function() {
-			self.newSearch();
+			//	If the pasted value is a link
+			if ($('#trackname').val().match(/youtube.com/i)) {
+				//	The loader cause we have to show it's working
+				$('.search-loader').removeClass('hidden');
+
+				var track = new Track({
+					//	We retrieve the video id
+					videoId: $('#trackname').val().substr($('#trackname').val().indexOf('v=') + 2, 11),
+				});
+				//console.log(track.get('videoId'));
+				
+				//	Then we have to wait a little so the youtube data are gathered
+				setTimeout(function(){
+					if (track) { //	If the track still exists, ie youtube data are retrieved
+						playlist.reset(track);
+						loadNextVideo(playlist.shift());
+						$('.search-loader').addClass('hidden');
+						$('#trackname').val('');
+					}
+				}, 1000);
+			} else
+				self.newSearch();
 		}, 4);
 	},
 

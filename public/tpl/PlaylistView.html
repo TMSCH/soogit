@@ -4,6 +4,10 @@
 		<img src="img/ajax-loader.gif" class="playlist-loader" />
 		<div class="playlist-loading-info">Loading playlist...</div>
 	</div>
+<% } else if (typeof loadingPlaylistError != "undefined") { %>
+	<div id="next-track" class="disabled">
+		<div>No similar track was found.</div>
+	</div>
 <% } else if (typeof empty != "undefined") { %>
 	<div id="next-track" class="disabled">
 		<div>No track in the playlist : add another one !</div>
@@ -22,6 +26,10 @@
 		<div class="divider"></div>
 		<% if (typeof youtubeData != 'undefined') { %>
 			<div class="play-it link">Play now</div>
+		<% } else if (typeof youtubeDataError != 'undefined') { %>
+			<div>
+				No corresponding youtube video was found.
+			</div>
 		<% } else { %>
 			<div>
 				<img src="img/ajax-loader.gif" class="video-loader" /> Loading video

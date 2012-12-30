@@ -24,6 +24,11 @@ body {
 	margin-top: 30px;*/
 }
 
+#player-container .player-loader {
+	margin-top: 200px;
+	font-size: 30px;
+}
+
 .navbar-inner {
 }
 
@@ -65,10 +70,17 @@ body {
 
 #search-list .img {
 	width: 120px;
+	position: relative;;
 }
 
 #search-list .img img {
 	border: 1px solid #777;
+}
+
+#search-list .add-to-playlist {
+	position: absolute;
+	top: 10px;
+	left: 10px;
 }
 
 #search-list .texte {
@@ -83,12 +95,6 @@ body {
 
 #search-list .description {
 	font-size: 10px;
-}
-
-#search-list .add-to-playlist {
-	position: absolute;
-	top: 10px;
-	left: 10px;
 }
 
 #next-track-container {

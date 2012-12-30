@@ -30,6 +30,7 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {
     //event.target.playVideo();
+    $('#player-container .player-loader').remove();
 }
 
 function onPlayerStateChange(event) {

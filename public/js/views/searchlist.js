@@ -7,6 +7,8 @@ window.NavbarView = Backbone.View.extend({
 	suggestQueries: [],
 
 	lastSearch: '',
+
+	panelMoving: false,
 	
 	events: {
 		"click #search-track": "newSearch",
@@ -102,13 +104,24 @@ window.NavbarView = Backbone.View.extend({
 	},
 
 	hide: function() {
-		$('#search-list-container', this.el).animate({'right': '-350px', 'opacity': '0.50'}).addClass('retracted');//.addClass('hidden');
+		if (! this.panelMoving){
+			var self = this;
+			this.panelMoving = true;
+			$('#search-list-container', this.el).addClass('retracted')
+									.animate({'right': '-350px', 'opacity': '0.50'}, 300, 'swing', function(){self.panelMoving = false});
+		}
 	},
 
 	show: function (e) {
 		if ($('#search-list-container', this.el).hasClass('retracted') && this.model.length > 0) {
-			$('#search-list-container', this.el).animate({'right': '0px', 'opacity': '1'}).removeClass('retracted').removeClass('hidden');
-			$('#trackname').autocomplete('close');
+			if (! this.panelMoving) {
+				var self = this;
+				this.panelMoving = true;
+				$('#search-list-container', this.el).removeClass('retracted')
+								.removeClass('hidden')
+								.animate({'right': '0px', 'opacity': '1'}, 300, 'swing', function(){self.panelMoving = false});
+				$('#trackname').autocomplete('close');
+			}
 		} else if (this.model.length == 0) {
 			$('#trackname').tooltip('open');
 		}

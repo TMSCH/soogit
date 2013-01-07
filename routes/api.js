@@ -173,8 +173,21 @@ exports.generatePlaylistFromTrack = function (req, res) {
             
             //  If could not retrieve tracks similar
             if (tracks == null) {
-                console.log('Could not find similar tracks on Lastfm');
-                res.send(null);
+                console.log('Could not find similar tracks on Lastfm, now looking for similar artists and their top tracks');
+
+                artist = {name: track.artist};
+
+                searchSimilarArtistsByArtist(artist, function(artists) {
+                    getArtistsTopTracks(artists, 30, [], function(tracks){ //   30 tracks to ensure at least 10 at the end...
+                        if (tracks != null) {
+                            //  We found tracks
+                            tracks = randomSort(tracks);
+                            console.log(tracks);
+                            res.send(tracks);
+                        }
+                    });
+                });
+                
                 return;
             }
 
@@ -424,6 +437,154 @@ var searchSimilarTracksByTrack = function (track, callback) {
     });
     return;
 };
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+//  Get the similar tracks to one track by looking up similar artists
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+var searchSimilarArtistsByArtist = function (artist, callback) {
+    console.log('Asking last fm for the artists similar to the one found : ' + artist.name);
+
+    var nbrArtists = 15;
+
+    var options = {
+        host: LastFMURL,
+        port: 80,
+        path: '/2.0/?method=artist.getSimilar&api_key=' + LastFMKey + '&format=json&limit=' + 2 * nbrArtists // 20 similar artists and we select 10
+    };
+
+    if (artist.mbid)
+        options.path += '&mbid=' + encodeURIComponent(artist.mbid);
+    else
+        options.path += '&artist=' + encodeURIComponent(artist.name);
+
+    console.log('URL : ' + options.host + options.path);
+    http.get(options, function(res) {
+        console.log("STATUS : " + res.statusCode);
+        res.setEncoding('utf8');
+        var data = "";
+        //  Handle of the chunks of data
+        res.on('data', function (chunk) {
+            data += chunk;
+        })
+        .on('end', function() {
+            res = JSON.parse(data);
+            console.log(res);
+            if (!res.error){
+                var artistsMatched = res.similarartists.artist;
+
+                //  If no artist similar
+                if (res.similarartists['#text']) {
+                    callback(null);
+                    return;
+                }
+
+                var artists = [];
+                var init = Math.floor(Math.random() * Math.max(artistsMatched.length - nbrArtists, 0)); //  Random number between 0 and number of results - 20
+                for (var i = init; i < init + nbrArtists; i++) {
+                    artists.push({name: artistsMatched[i].name, mbid: artistsMatched[i].mbid});
+                };
+
+                console.log('Artists similar :');
+                console.log(artists);
+
+                callback(artists);
+            } else { // Error : could not find any artist
+                console.log('The artist was not found in lastfm database, impossible to get similar tracks');
+                callback(null);
+            }
+        });
+    })
+    //  If there is an error while doing the HTTP request
+    .on('error', function(e) {
+            console.log("Got error: " + e.message);
+            callback(null);
+    });
+    return;
+};
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+//  Get the similar tracks to one track by looking up similar artists
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+var getArtistTopTracks = function (artist, nbrToGet, callback) {
+    console.log('Asking last fm for the top ' + nbrToGet + ' tracks of artist : ' + artist.name);
+
+    var options = {
+        host: LastFMURL,
+        port: 80,
+        path: '/2.0/?method=artist.getTopTracks&api_key=' + LastFMKey + '&format=json&limit=' + nbrToGet
+    };
+
+    if (artist.mbid)
+        options.path += '&mbid=' + encodeURIComponent(artist.mbid);
+    else
+        options.path += '&artist=' + encodeURIComponent(artist.name);
+
+    console.log('URL : ' + options.host + options.path);
+    http.get(options, function(res) {
+        console.log("STATUS : " + res.statusCode);
+        res.setEncoding('utf8');
+        var data = "";
+        //  Handle of the chunks of data
+        res.on('data', function (chunk) {
+            data += chunk;
+        })
+        .on('end', function() {
+            res = JSON.parse(data);
+            console.log(res);
+            if (!res.error){
+                var topTracks = res.toptracks.track;
+
+                //  If no similar
+                if (res.toptracks['#text']) {
+                    callback(null);
+                    return;
+                }
+
+                var tracks = [];
+                for (var i = 0; i < topTracks.length; i++) {
+                    tracks.push({name: topTracks[i].name, artist: topTracks[i].artist.name, mbid: topTracks[i].mbid});
+                };
+                //  Randomizing the order
+                tracks = randomSort(tracks);
+
+                console.log('Top tracks of the artist : ' + artist.name);
+                console.log(tracks);
+
+                callback(tracks);
+            } else { // Error : could not find track
+                console.log('The artist was not found in the database so top tracks could not have been retrieved');
+                callback(null);
+            }
+        });
+    })
+    //  If there is an error while doing the HTTP request
+    .on('error', function(e) {
+            console.log("Got error: " + e.message);
+            callback(null);
+    });
+    return;
+}
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+//  Get a list of artists top tracks
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+var getArtistsTopTracks = function(artists, totalNbToGet, tracksList, callback) {
+    //  If the list of artists is not empty
+    if (artists != null){
+        var nbr = Math.round(totalNbToGet / (artists.length + 1));
+        //  We get the top tracks of the first artist on the list, and remove it from there
+        getArtistTopTracks(artists.shift(), nbr, function(tracks) {
+            //  When the response is received, we call the same method with the reduced list of artists,
+            //  The changed total nb to get, and the tracklists updated
+            if (artists.length > 0)
+                getArtistsTopTracks(artists, totalNbToGet - tracks.length, tracksList.concat(tracks), callback);
+            else callback(tracksList);
+        });
+    } else callback(tracksList);
+}
 
 var randomSort = function (list){
     var len = list.length;

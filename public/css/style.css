@@ -29,6 +29,10 @@ body {
 	font-size: 30px;
 }
 
+#player, #player iframe {
+	z-index: 1;
+}
+
 .navbar-inner {
 }
 

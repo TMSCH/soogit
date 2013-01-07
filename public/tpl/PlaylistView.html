@@ -1,50 +1,72 @@
-<% if (typeof loadingPlaylist != 'undefined') { %>
-	<div id="next-track" class="not-disabled">
-		<div class="next-one">Next track :</div>
-		<img src="img/ajax-loader.gif" class="playlist-loader" />
-		<div class="playlist-loading-info">Loading playlist...</div>
-	</div>
-<% } else if (typeof loadingPlaylistError != "undefined") { %>
-	<div id="next-track" class="disabled">
-		<div>No similar track was found.</div>
-	</div>
-<% } else if (typeof empty != "undefined") { %>
-	<div id="next-track" class="disabled">
-		<div>No track in the playlist : add another one !</div>
-	</div>
-<% } else { %>
-	<div id="next-track" class="not-disabled">
-		<div class="next-one">Next track :</div>
+<div id="next-track" class="not-disabled">
 
-		<div class="trackname">
-		<% if (typeof videoTitle == "undefined" && typeof name != 'undefined' && typeof artist != 'undefined') { %>
-			<%= artist %> - <%= name %>
-		<% } else { %>
-			<%= videoTitle.length > 50 ? videoTitle.substr(0, 47) + '...' : videoTitle %>
-		<% } %>
-		</div>
-		<div class="divider"></div>
-		<% if (typeof youtubeData != 'undefined') { %>
-			<div class="play-it link">Play now</div>
-		<% } else if (typeof youtubeDataError != 'undefined') { %>
-			<div>
-				No corresponding youtube video was found.
+	
+	<% if (typeof playlistEmpty != "undefined") { %>
+		<div class="error">No track in the playlist : add another one !</div>
+
+	<!-- CURRENT TRACK IF THERE IS ONE -->
+	<% } else {
+		if (typeof currentTrack != 'undefined') { %>
+				<div class="trackname">
+				<% if (typeof currentTrack.videoTitle == "undefined" && typeof currentTrack.name != 'undefined' && typeof currentTrack.artist != 'undefined') { %>
+					<%= currentTrack.artist %> - <%= currentTrack.name %>
+				<% } else { %>
+					<%= currentTrack.videoTitle.length > 50 ? currentTrack.videoTitle.substr(0, 47) + '...' : currentTrack.videoTitle %>
+				<% } %>
+				</div>
+				<div class="divider"></div>
+				<% if (state == 'paused') { %>
+				<div class="play-it link">Play</div>
+				<% } else { %>
+				<div class="pause-it link">Pause</div>
+				<% } %>
+				<div class="divider"></div>
+	
+		<!-- NEXT TRACK FIELD -->
+
+		<% } if (typeof nextTrack != 'undefined') { %>
+
+			<div class="trackname small">
+						<% if (typeof nextTrack.videoTitle == "undefined" && typeof nextTrack.name != 'undefined' && typeof nextTrack.artist != 'undefined') { %>
+							<%= nextTrack.artist %> - <%= nextTrack.name %>
+						<% } else { %>
+							<%= nextTrack.videoTitle.length > 40 ? nextTrack.videoTitle.substr(0, 37) + '...' : nextTrack.videoTitle %>
+						<% } %>
 			</div>
-		<% } else { %>
-			<div>
-				<img src="img/ajax-loader.gif" class="video-loader" /> Loading video
-			</div>
-		<% } %>
-		<div class="divider"></div>
-		<div class="playlist-info">
-			<% if (typeof onPlaylist != 'undefined') { %>
-				<!--Playlist : <%= onPlaylist %> tracks-->
-				Playlist loaded
-				<small>(<%= onPlaylist %> tracks)</small>
+			<div class="divider"></div>
+			<% if (typeof nextTrack.youtubeData != 'undefined') { %>
+						<div class="next-track-button link small">Next</div>
+					<% } else if (typeof nextTrack.youtubeDataError != 'undefined') { %>
+						<div class="small">
+							No corresponding youtube video was found.
+						</div>
+					<% } else { %>
+						<div class="small">
+							<img src="img/ajax-loader.gif" class="video-loader" /> Loading video
+						</div>
 			<% } %>
-		</div>
-		<img src="img/ajax-loader.gif" class="playlist-loader hidden" />
-		<div class="playlist-loading-info hidden">Loading playlist...</div>
-		<div class="delete-track pull-right link">Delete track</div>
-	</div>
-<% } %>
+			<div class="divider"></div>
+
+		<% } %>
+
+		<!-- PLAYLIST INFO FIELD -->
+		<% if (typeof loadingPlaylist != 'undefined') { %>
+				<img src="img/ajax-loader.gif" class="playlist-loader" />
+				<div class="playlist-loading-info small">Loading playlist...</div>
+		<% } else if (typeof loadingPlaylistError != "undefined") { %>
+				<div class="error">No similar track was found.</div>
+		<% } else { %>
+				<div class="playlist-info small">
+					<% if (typeof onPlaylist != 'undefined') { %>
+						<!--Playlist : <%= onPlaylist %> tracks-->
+						Playlist loaded
+						(<%= onPlaylist %> tracks)
+					<% } %>
+				</div>
+				<img src="img/ajax-loader.gif" class="playlist-loader hidden" />
+				<div class="playlist-loading-info hidden small">Loading playlist...</div>
+				<div class="delete-track pull-right link small">Delete track</div>
+		<% } 
+	} %>
+
+</div>

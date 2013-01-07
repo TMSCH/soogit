@@ -132,16 +132,15 @@ window.Playlist = TrackCollection.extend({
 
     beingGenerated: false,
 
+    currentTrack: null,
+
+    playing: false,
+
     initialize: function() {
         this.on('reset', this.update, this);
         this.on('remove', this.update, this);
         this.on('add', this.update, this);
     },
-
-    /*-----------------------------------------------------------------------------------------------------
-    //  Some cursors to navigate in the playlist :
-    //  This way we can store past tracks
-    -----------------------------------------------------------------------------------------------------*/
 
     /*-----------------------------------------------------------------------------------------------------
     //  When there's no more track in the playlist, load similar tracks
@@ -207,5 +206,23 @@ window.Playlist = TrackCollection.extend({
                     self.trigger('update', "error");
                 }
             });
-    }
+    },
+
+    playNext: function() {
+        if (this.length > 0) {
+            this.currentTrack = playlist.shift();
+            loadNextVideo(this.currentTrack);
+            this.playing = true;
+        } else {
+            this.playing = false;
+        }
+    },
+
+    pause: function() {
+        this.trigger('playerStateChange', 'paused');
+    },
+
+    play: function() {
+        this.trigger('playerStateChange', 'playing');
+    },
 });

@@ -273,7 +273,7 @@ window.SearchListItemView = Backbone.View.extend({
 		console.log($(e.currentTarget).hasClass('add-to-playlist'));
 		//	We check whether the 'add-to-playlist' link has been clicked, if not we load the video
 		if (! $(e.currentTarget).hasClass('add-to-playlist'))
-			loadNextVideo(playlist.shift());
+			playlist.playNext();
 	}
 });
 

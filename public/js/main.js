@@ -3,6 +3,13 @@
 -----------------------------------------------------------------------------------------------------*/
 
 var playlist = new Playlist();
+playlist.push({
+    name: 'Rough Sleep',
+    artist: 'Burial',
+    videoTitle : 'Burial - Rough Sleep',
+    videoId: 'XdvZLcYc8ag',
+    youtubeData: true
+}, {silent : true});
 
 /*-----------------------------------------------------------------------------------------------------
 //  Backbone router

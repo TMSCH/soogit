@@ -2,8 +2,8 @@
 //  Youtube Player API
 -----------------------------------------------------------------------------------------------------*/
 
-var HEIGHT = window.innerHeight - 120;
-var WIDTH = Math.round(HEIGHT * 640 / 360);
+var HEIGHT = window.innerHeight;
+var WIDTH = window.innerWidth;
 
 var tag = document.createElement('script');
 tag.src = "//www.youtube.com/iframe_api";
@@ -13,6 +13,13 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 var track = new Track({videoId: 'XdvZLcYc8ag', name: 'Burial - Rough Sleeper'});
 console.log('api loaded');
 
+$(document).ready(function(){
+	$('#player-mask').css({
+		width: WIDTH + 'px',
+		height: HEIGHT + 'px',
+	});
+});
+
 var player;
 
 function onYouTubeIframeAPIReady() {
@@ -20,6 +27,10 @@ function onYouTubeIframeAPIReady() {
 	    height: HEIGHT,
 	    width: WIDTH,
 	    videoId: 'XdvZLcYc8ag',
+	    playerVars: {
+	    	'controls': 0,
+	    	'showinfo': 0,
+	    },
 	    events: {
 	      'onReady': onPlayerReady,
 	      'onStateChange': onPlayerStateChange,
@@ -36,13 +47,16 @@ function onPlayerReady(event) {
 function onPlayerStateChange(event) {
     if (event.data == YT.PlayerState.ENDED) {
     	console.log('Video ended');
-    	if (playlist.length > 0)
-    		loadNextVideo(playlist.shift());
+    	if (playlist.length > 0) playlist.playNext();
+    } else if (event.data = YT.PlayerState.PAUSED) {
+    	playlist.pause();
+    } else {
+    	playlist.play();
     }
 }
 
 function onPlayerError() {
-	loadNextVideo(playlist.shift());
+	playlist.playNext();
 }
 
 function loadNextVideo(track) {

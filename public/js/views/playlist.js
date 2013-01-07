@@ -1,8 +1,10 @@
 window.PlaylistView = Backbone.View.extend({
-	
+
 	events: {
 		"click .play-it": "pressPlay",
+		"click .pause-it": "pressPause",
 		"click .delete-track": 'deleteNextTrack',
+		"click .next-track-button": 'pressNext',
 	},
 
 	initialize: function() {
@@ -15,21 +17,44 @@ window.PlaylistView = Backbone.View.extend({
 		//	Some messages received by the playlist
 		playlist.on('update', this.playlistUpdated, this);
 		playlist.on('get-video', this.gettingVideo, this);
+		playlist.on('playerStateChange', this.render, this);
 		playlist.on('empty', this.render, this);
 	},
 
 	render: function(options) {
-		if (this.model.length > 0){
-			track = this.model.at(0).toJSON();
-			track.onPlaylist = this.model.length;
-		} else if(this.model.beingGenerated) {
-			track = {loadingPlaylist: true};
-		} else if (options && options.loadingPlaylistError) {
-			track = {loadingPlaylistError: true};
-		} else {
-			track = {empty: true};
+		data = {};
+		console.log(playlist.currentTrack);
+		if (playlist.currentTrack != null) {
+			data.currentTrack = playlist.currentTrack.toJSON();
 		}
-		$(this.el).html(this.template(track));
+
+
+		//	Handling player state
+		if (options && options.pressPause)
+			data.state = 'paused';
+		else if (options && options.pressPlay)
+			data.state = 'playing';
+		else if (player !== undefined) {
+			var playerState = player.getPlayerState();
+			if (playerState == YT.PlayerState.UNSTARTED || playerState == YT.PlayerState.PAUSED)
+				data.state = 'paused';
+			else
+				data.state = 'playing';
+		} else {
+			data.state="paused";
+		}
+
+		if (this.model.length > 0){
+			data.nextTrack = this.model.at(0).toJSON();
+			data.onPlaylist = this.model.length;
+		} else if(this.model.beingGenerated) {
+			data.loadingPlaylist = true;
+		} else if (options && options.loadingPlaylistError) {
+			data.loadingPlaylistError = true;
+		} else {
+			data.playlistEmpty = true;
+		}
+		$(this.el).html(this.template(data));
 
 		return this;
 	},
@@ -66,10 +91,25 @@ window.PlaylistView = Backbone.View.extend({
 	},
 
 	pressPlay: function() {
-		if (this.model.length > 0)
-			loadNextVideo(this.model.shift());
-		else
-			$('#trackname').focus();
+		if (player !== undefined) {
+			player.playVideo();
+			playlist.playing = true;
+		}
+		this.render({pressPlay: true});
+	},
+
+	pressPause: function() {
+		if (player !== undefined) {
+			player.pauseVideo();
+			playlist.playing = false;
+		}
+		this.render({pressPause: true});
+	},
+
+	pressNext: function() {
+		if (playlist.length > 0) playlist.playNext();
+		else $('#trackname').focus();
+		this.render();
 	},
 
 	deleteNextTrack: function() {

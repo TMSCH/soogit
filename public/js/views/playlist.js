@@ -23,7 +23,7 @@ window.PlaylistView = Backbone.View.extend({
 
 	render: function(options) {
 		data = {};
-		console.log(playlist.currentTrack);
+		
 		if (playlist.currentTrack != null) {
 			data.currentTrack = playlist.currentTrack.toJSON();
 		}
@@ -34,14 +34,16 @@ window.PlaylistView = Backbone.View.extend({
 			data.state = 'paused';
 		else if (options && options.pressPlay)
 			data.state = 'playing';
-		else if (typeof player !== undefined && typeof player.getPlayerState === 'function') {
-			var playerState = player.getPlayerState();
-			if (playerState == YT.PlayerState.UNSTARTED || playerState == YT.PlayerState.PAUSED)
-				data.state = 'paused';
-			else
-				data.state = 'playing';
+		else if (typeof player !== 'undefined') {
+			if (typeof player.getPlayerState === 'function') {
+				var playerState = player.getPlayerState();
+				if (playerState == YT.PlayerState.UNSTARTED || playerState == YT.PlayerState.PAUSED)
+					data.state = 'paused';
+				else
+					data.state = 'playing';
+			}
 		} else {
-			data.state="paused";
+			data.state = "paused";
 		}
 
 		if (this.model.length > 0){

@@ -1,12 +1,7 @@
 <div id="next-track" class="not-disabled">
 
-	
-	<% if (typeof playlistEmpty != "undefined") { %>
-		<div class="error">No track in the playlist : add another one !</div>
-
 	<!-- CURRENT TRACK IF THERE IS ONE -->
-	<% } else {
-		if (typeof currentTrack != 'undefined') { %>
+		<% if (typeof currentTrack != 'undefined') { %>
 				<div class="trackname">
 				<% if (typeof currentTrack.videoTitle == "undefined" && typeof currentTrack.name != 'undefined' && typeof currentTrack.artist != 'undefined') { %>
 					<%= currentTrack.artist %> - <%= currentTrack.name %>
@@ -15,10 +10,12 @@
 				<% } %>
 				</div>
 				<div class="divider"></div>
+				
+				<!-- Play / Pause button -->
 				<% if (state == 'paused') { %>
-				<div class="play-it link">Play</div>
+					<div class="play-it link">Play</div>
 				<% } else { %>
-				<div class="pause-it link">Pause</div>
+					<div class="pause-it link">Pause</div>
 				<% } %>
 				<div class="divider"></div>
 	
@@ -36,11 +33,11 @@
 			<div class="divider"></div>
 			<% if (typeof nextTrack.youtubeData != 'undefined') { %>
 						<div class="next-track-button link small">Next</div>
-					<% } else if (typeof nextTrack.youtubeDataError != 'undefined') { %>
+			<% } else if (typeof nextTrack.youtubeDataError != 'undefined') { %>
 						<div class="small">
 							No corresponding youtube video was found.
 						</div>
-					<% } else { %>
+			<% } else { %>
 						<div class="small">
 							<img src="img/ajax-loader.gif" class="video-loader" /> Loading video
 						</div>
@@ -50,7 +47,9 @@
 		<% } %>
 
 		<!-- PLAYLIST INFO FIELD -->
-		<% if (typeof loadingPlaylist != 'undefined') { %>
+		<% if (typeof playlistEmpty != "undefined") { %>
+			<div class="error">No track in the playlist : add another one !</div>
+		<% } else if (typeof loadingPlaylist != 'undefined') { %>
 				<img src="img/ajax-loader.gif" class="playlist-loader" />
 				<div class="playlist-loading-info small">Loading playlist...</div>
 		<% } else if (typeof loadingPlaylistError != "undefined") { %>
@@ -66,7 +65,6 @@
 				<img src="img/ajax-loader.gif" class="playlist-loader hidden" />
 				<div class="playlist-loading-info hidden small">Loading playlist...</div>
 				<div class="delete-track pull-right link small">Delete track</div>
-		<% } 
-	} %>
+		<% } %>
 
 </div>

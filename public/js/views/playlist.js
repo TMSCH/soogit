@@ -34,7 +34,7 @@ window.PlaylistView = Backbone.View.extend({
 			data.state = 'paused';
 		else if (options && options.pressPlay)
 			data.state = 'playing';
-		else if (player !== undefined) {
+		else if (typeof player !== undefined && typeof player.getPlayerState === 'function') {
 			var playerState = player.getPlayerState();
 			if (playerState == YT.PlayerState.UNSTARTED || playerState == YT.PlayerState.PAUSED)
 				data.state = 'paused';

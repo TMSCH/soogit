@@ -157,7 +157,7 @@ window.NavbarView = Backbone.View.extend({
 				setTimeout(function(){
 					if (track) { //	If the track still exists, ie youtube data are retrieved
 						playlist.reset(track);
-						loadNextVideo(playlist.shift());
+						playlist.playNext();
 						$('.search-loader').addClass('hidden');
 						$('#trackname').val('');
 					}

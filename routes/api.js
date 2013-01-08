@@ -228,8 +228,17 @@ var getMetaData = function (tracknamePlain, callback) {
 
     var tracknameClean = clean(tracknamePlain);
     //  We suppose the youtube title is like 'artist' - 'title'
-    var nameClean = clean(tracknamePlain.split('-')[1]);
-    var artistClean = clean(tracknamePlain.split('-')[0]);
+    
+    //  if there is a '-' as separator between the artist and the name of the track
+    if (typeof tracknamePlain.split('-')[1] !== 'undefined'){
+        var nameClean = clean(tracknamePlain.split('-')[1]);
+        var artistClean = clean(tracknamePlain.split('-')[0]);
+    }
+    //  If not, then we just take the full track name as the name of the track, and empty as the artist. It can work.
+    else {
+        var nameClean = clean(tracknamePlain);
+        var artistClean = "";
+    }
 
     //  Then we query lastfm and try to find the metadata
     //  We only look for tracks matching the title
@@ -271,7 +280,8 @@ var getMetaData = function (tracknamePlain, callback) {
         }
         console.log(tracks[i]);
         
-        //  By default, first one
+        //  By default, first one.
+        //  If we meet the case of no '-' as separator, then we just hope that the first one is the good one :-)
         if (! tracks[i]) i = 0;
 
         console.log(tracks[i]);

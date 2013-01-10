@@ -3,12 +3,13 @@
 -----------------------------------------------------------------------------------------------------*/
 
 var playlist = new Playlist();
-//*
+/*
 playlist.push({
     name: 'Rough Sleep',
     artist: 'Burial',
     videoTitle : 'Burial - Rough Sleep',
     videoId: 'XdvZLcYc8ag',
+    durationInSec: 828,
     youtubeData: true
 }, {silent : true});//*/
 

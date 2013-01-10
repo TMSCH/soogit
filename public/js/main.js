@@ -3,19 +3,22 @@
 -----------------------------------------------------------------------------------------------------*/
 
 var playlist = new Playlist();
+//*
 playlist.push({
     name: 'Rough Sleep',
     artist: 'Burial',
     videoTitle : 'Burial - Rough Sleep',
     videoId: 'XdvZLcYc8ag',
     youtubeData: true
-}, {silent : true});
+}, {silent : true});//*/
 
 /*-----------------------------------------------------------------------------------------------------
 //  Backbone router
 -----------------------------------------------------------------------------------------------------*/
 
 var AppRouter = Backbone.Router.extend({
+
+    playlistController: null,
 
     routes: {
         ""                  : "initialize",
@@ -28,7 +31,8 @@ var AppRouter = Backbone.Router.extend({
             $("#sidebar").html(new SidebarView({model: trackList}).el);
         }});*/
         $('#navbar').html(new NavbarView({model: trackList}).el);
-        $('#next-track-container').html(new PlaylistView({model: playlist}).el);
+        this.playlistController = new PlaylistView({model: playlist});
+        $('#next-track-container').html(this.playlistController.el);
     },
 
 	list: function() {
@@ -50,14 +54,54 @@ utils.loadTemplate(['NavbarView', 'SearchListItemView', 'PlaylistView', 'HelpVie
     Backbone.history.start();
 });
 
-//  Idle handle
-$.idleTimer(5000);
+jQuery(document).ready(function($) {
 
-$(document).bind("idle.idleTimer", function(){
-    $('#navbar, #next-track-container').animate({opacity: 0.2});
+    //  transparency after 5000 delay
+    //  Idle handle
+    $.idleTimer(5000);
+    $(document).bind("idle.idleTimer", function(){
+        $('#navbar, #next-track-container, #track-navbar').animate({opacity: 0.2}, 2000);
+    });
+
+
+    $(document).bind("active.idleTimer", function(){
+        $('#navbar, #next-track-container, #track-navbar').animate({opacity: 1});
+    });
+
+    //  Player mask
+    $('#player-mask').css({'width': window.innerWidth + 'px', 'height': window.innerHeight + 'px'});
+    $('#player-mask').click(function() {
+        playVideo();
+    });
+
+    setTimeout(startTracker, 1000);
+
 });
 
+function startTracker() {
+    if (app){
+        //  Tracker properties
+        $('#tracker').draggable({
+                axis: 'x',
+                drag: app.playlistController.trackerTracker,
+                stop: app.playlistController.trackerRelease,
+        })
+            .click(function(e){e.stopPropagation()})
+            .draggable('disable')
+            .css('opacity', 1).data('lastPosX', 0)
+            .hover(app.playlistController.trackerHover, app.playlistController.trackerOut);
 
-$(document).bind("active.idleTimer", function(){
-    $('#navbar, #next-track-container').animate({opacity: 1});
-});
+        //  Clicking on the bar of tracker
+        $('#track-navbar').click(function(e) {
+            if (playlist.currentTrack) {
+                player.seekTo(Math.round(playlist.currentTrack.get('durationInSec') * e.pageX / (window.innerWidth - 10)), true);
+            }
+        });
+
+        $(document).on('mouseup', function() {
+            $('#tracker').draggable('disable');
+            $('#tracker').css('opacity', 1);
+            //app.playlistController.trackerRelease();
+        });
+    } else setTimeout(startTracker, 1000);
+}

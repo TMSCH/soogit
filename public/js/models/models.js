@@ -208,21 +208,12 @@ window.Playlist = TrackCollection.extend({
             });
     },
 
-    playNext: function() {
+    nextTrack: function() {
         if (this.length > 0) {
             this.currentTrack = playlist.shift();
-            loadNextVideo(this.currentTrack);
-            this.playing = true;
+            return this.currentTrack.get('videoId');
         } else {
-            this.playing = false;
+            return false;
         }
-    },
-
-    pause: function() {
-        this.trigger('playerStateChange', 'paused');
-    },
-
-    play: function() {
-        this.trigger('playerStateChange', 'playing');
-    },
+    }
 });

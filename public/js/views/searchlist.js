@@ -28,6 +28,7 @@ window.NavbarView = Backbone.View.extend({
 		this.render();
 		this.model.on('add', this.refresh, this);
 		this.model.on('remove', this.refresh, this);
+		this.listenTo(playlist, 'reset', this.hide);
 	},
 
 	render: function() {
@@ -157,7 +158,7 @@ window.NavbarView = Backbone.View.extend({
 				setTimeout(function(){
 					if (track) { //	If the track still exists, ie youtube data are retrieved
 						playlist.reset(track);
-						playlist.playNext();
+						app.playlistController.nextTrack();
 						$('.search-loader').addClass('hidden');
 						$('#trackname').val('');
 					}
@@ -271,9 +272,10 @@ window.SearchListItemView = Backbone.View.extend({
 		//	We reset the playlist so the first track is the one selected
 		playlist.reset(this.model);
 		console.log($(e.currentTarget).hasClass('add-to-playlist'));
+		
 		//	We check whether the 'add-to-playlist' link has been clicked, if not we load the video
 		if (! $(e.currentTarget).hasClass('add-to-playlist'))
-			playlist.playNext();
+			app.playlistController.nextTrack();
 	}
 });
 
@@ -319,22 +321,6 @@ window.searchVideos = function(options, callback) {
                 console.log("Query to Youtube API successfully retrieved.");
                 console.log(res);
                 if (res.data.items) {
-	                /*while (trackData = res.data.items[i]) {
-	                    var track = new Track({
-	                        videoId: trackData.id,
-	                        title: trackData.title,
-	                        img: trackData.thumbnail.sqDefault,
-	                        durationInSec: trackData.duration,
-	                        views: trackData.viewCount,
-	                        uploaded_raw: trackData.uploaded,
-	                        description: trackData.description,
-	                        youtubeData: true,
-	                    });
-
-	                    tracks.push(track);
-	                    i++;
-	                }
-	                callback(tracks);*/
 	                callback(res.data.items);
 	            } else {
 	            	console.log("No results from the query...");

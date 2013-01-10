@@ -1,10 +1,12 @@
 window.PlaylistView = Backbone.View.extend({
 
+	playerState: null,
+
 	events: {
-		"click .play-it": "pressPlay",
-		"click .pause-it": "pressPause",
+		"click .play-it": "play",
+		"click .pause-it": "pause",
 		"click .delete-track": 'deleteNextTrack',
-		"click .next-track-button": 'pressNext',
+		"click .next-track-button": 'nextTrack',
 	},
 
 	initialize: function() {
@@ -29,19 +31,11 @@ window.PlaylistView = Backbone.View.extend({
 		}
 
 
-		//	Handling player state
-		if (options && options.pressPause)
-			data.state = 'paused';
-		else if (options && options.pressPlay)
-			data.state = 'playing';
-		else if (typeof player !== 'undefined') {
-			if (typeof player.getPlayerState === 'function') {
-				var playerState = player.getPlayerState();
-				if (playerState == YT.PlayerState.UNSTARTED || playerState == YT.PlayerState.PAUSED)
-					data.state = 'paused';
-				else
-					data.state = 'playing';
-			}
+		if (this.playerState != null) {
+			if (this.playerState == YT.PlayerState.UNSTARTED || this.playerState == YT.PlayerState.PAUSED)
+				data.state = 'paused';
+			else
+				data.state = 'playing';
 		} else {
 			data.state = "paused";
 		}
@@ -92,26 +86,17 @@ window.PlaylistView = Backbone.View.extend({
 		}
 	},
 
-	pressPlay: function() {
-		if (player !== undefined) {
-			player.playVideo();
-			playlist.playing = true;
-		}
-		this.render({pressPlay: true});
+	play: function() {
+		playVideo();
 	},
 
-	pressPause: function() {
-		if (player !== undefined) {
-			player.pauseVideo();
-			playlist.playing = false;
-		}
-		this.render({pressPause: true});
+	pause: function() {
+		pauseVideo();
 	},
 
-	pressNext: function() {
-		if (playlist.length > 0) playlist.playNext();
+	nextTrack: function() {
+		if (playlist.length > 0) loadAndPlayVideo(playlist.nextTrack());
 		else $('#trackname').focus();
-		this.render();
 	},
 
 	deleteNextTrack: function() {
@@ -119,5 +104,107 @@ window.PlaylistView = Backbone.View.extend({
 			console.log('Deleting next track');
 			playlist.shift();
 		}
-	}
+	},
+
+	//
+	//	TRACKER
+	//
+
+	trackerMoving: false,
+
+	trackerInit: function() {
+		$('#tracker').css('left', '0px');
+	},
+
+	trackerStartMoving: function() {
+		this.trackerMoving = true;
+		this.trackerMovement();
+	},
+
+	trackerMovement: function() {
+		var self = this;
+
+			setTimeout(function() {
+				if (self.trackerMoving) {
+					var positionX =  player.getCurrentTime() / playlist.currentTrack.get('durationInSec') * (window.innerWidth - 10);
+					positionX = Math.round(positionX);
+					//console.log(positionX);
+					$('#tracker').css('left', positionX + 'px');
+					self.trackerMovement();
+				}
+			}, 1000);
+	},
+
+	trackerStopMoving: function() {
+		this.trackerMoving = false;
+		$('#tracker').draggable('disable');
+	},
+
+	trackerHover: function() {
+		if (playlist.currentTrack){
+		    $('#tracker').css({
+		        'width': '12px',
+		        'height': '11px',
+		    });
+		    $('#tracker').draggable('enable');
+		}
+	},
+
+	trackerOut: function() {
+		$('#tracker').css({
+	        'width': '10px',
+	        'height': '9px',
+	    });
+	},
+
+	trackerRelease: function(e, ui) {
+		if (ui && playlist.currentTrack) {
+			$('#tracker').data('lastPosX', ui.position.left);
+			player.seekTo(Math.round(playlist.currentTrack.get('durationInSec') * ui.position.left / (window.innerWidth - 10)), true);
+		}
+	},
+
+	trackerTracker: function(e, ui) {
+		if (ui && playlist.currentTrack) {
+			if (Math.abs(ui.position.left - $('#tracker').data('lastPosX')) > 20) {
+				$('#tracker').data('lastPosX', ui.position.left);
+				player.seekTo(Math.round(playlist.currentTrack.get('durationInSec') * ui.position.left / (window.innerWidth - 10)), true);
+			}
+		}
+	},
+
+	//
+	//	PLAYER EVENTS HANDLING
+	//
+
+	playerReady: function() {
+	},
+
+	playerStateChanged: function(state) {
+		switch (state) {
+			case YT.PlayerState.ENDED:
+				this.trackerStopMoving();
+				this.trackerInit();
+				if (playlist.length > 0) loadAndPlayVideo(playlist.nextTrack());
+				break;
+			case YT.PlayerState.PAUSED:
+				this.trackerStopMoving();
+				break;
+			case YT.PlayerState.PLAYING:
+				this.trackerStartMoving();
+				break;
+			case YT.PlayerState.BUFFERING:
+				this.trackerStopMoving();
+				break;
+			case YT.PlayerState.CUED:
+				this.trackerStopMoving();
+				break;
+		}
+		this.playerState = state;
+		this.render();
+	},
+
+	playerError: function() {
+
+	},
 });

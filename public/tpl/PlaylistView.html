@@ -22,7 +22,7 @@
 		<!-- NEXT TRACK FIELD -->
 
 		<% } if (typeof nextTrack != 'undefined') { %>
-
+			<div class="next-one small">Next track :</div>
 			<div class="trackname small">
 						<% if (typeof nextTrack.videoTitle == "undefined" && typeof nextTrack.name != 'undefined' && typeof nextTrack.artist != 'undefined') { %>
 							<%= nextTrack.artist %> - <%= nextTrack.name %>

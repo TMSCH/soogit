@@ -37,12 +37,10 @@ body {
 }
 
 #player-mask {
+	z-index: 5;
 	position: fixed;
 	top: 0;
 	left: 0;
-	background-color: #FFFFCC;
-	opacity: 0.1;
-	z-index: 9;
 }
 
 .navbar-inner {
@@ -207,6 +205,32 @@ body {
 
 #next-track a:hover{
 	text-decoration: underline;
+}
+
+/* TRACKNAVBAR */
+
+#track-navbar {
+	z-index: 100;
+	position: fixed;
+	bottom: 40px;
+	left: 0px;
+	width: 100%;
+	height: 5px;
+	background-color: #2A47A0;
+	padding: 0;
+	cursor: pointer;
+}
+
+#tracker {
+	width: 10px;
+	height: 9px;
+	position: fixed;
+	bottom: 38px;
+	left: 0px;
+	background-color: #D1D1D1;
+}
+#tracker:hover {
+	cursor: pointer;
 }
 
 /* HELP STYLE */

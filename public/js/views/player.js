@@ -10,17 +10,9 @@ tag.src = "//www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-var track = new Track({videoId: 'XdvZLcYc8ag', name: 'Burial - Rough Sleeper'});
 console.log('api loaded');
 
-$(document).ready(function(){
-	$('#player-mask').css({
-		width: WIDTH + 'px',
-		height: HEIGHT + 'px',
-	});
-});
-
-var player;
+var player = null;
 
 function onYouTubeIframeAPIReady() {
 	player = new YT.Player('player', {
@@ -39,29 +31,52 @@ function onYouTubeIframeAPIReady() {
 	});
 }
 
+//
+//	PLAYER EVENTS
+//
+
 function onPlayerReady(event) {
-    //event.target.playVideo();
     $('#player-container .player-loader').remove();
+    app.playlistController.playerReady();
 }
 
 function onPlayerStateChange(event) {
-    if (event.data == YT.PlayerState.ENDED) {
-    	console.log('Video ended');
-    	if (playlist.length > 0) playlist.playNext();
-    } else if (event.data = YT.PlayerState.PAUSED) {
-    	playlist.pause();
-    } else {
-    	playlist.play();
-    }
+	app.playlistController.playerStateChanged(event.data);
 }
 
 function onPlayerError() {
-	playlist.playNext();
+	app.playlistController.playerError();
+}
+
+//
+//	PLAYER CONTROLS
+//
+
+function playVideo() {
+	if (player != null) {
+		player.playVideo();
+	}
+}
+
+function pauseVideo() {
+	if (player != null) {
+		player.pauseVideo();
+	}
+}
+
+function loadAndPlayVideo(id) {
+	if (player != null) {
+		//console.log('ok');
+		player.loadVideoById(id);
+		player.playVideo();
+	}
 }
 
 function loadNextVideo(track) {
-	if (track.get('videoId')) {
-		console.log('Loading next one on the playlist... ID: ' + track.get('videoId'));
-		player.loadVideoById(track.get('videoId'));
+	if (player != null) {
+		if (track.get('videoId')) {
+			console.log('Loading next one on the playlist... ID: ' + track.get('videoId'));
+			player.loadVideoById(track.get('videoId'));
+		}
 	}
 }

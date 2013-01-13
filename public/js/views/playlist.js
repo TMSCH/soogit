@@ -108,15 +108,22 @@ window.PlaylistView = Backbone.View.extend({
 
 	//
 	//	TRACKER
+	//	
+	//	>>> NEED TO IMPLEMENT THE BUFFER STATUS, QUITE USEFUL... player.getVideoLoadedFraction() <<<
 	//
 
 	trackerMoving: false,
+	bufferMoving: false,
+
+	videoStartingSec: 0,
 
 	trackerInit: function() {
 		$('#tracker').css('left', '0px');
 	},
 
 	trackerStartMoving: function() {
+		$('#track-navbar, #tracker').removeClass('hidden');
+
 		this.trackerMoving = true;
 		this.trackerMovement();
 	},
@@ -130,6 +137,7 @@ window.PlaylistView = Backbone.View.extend({
 					positionX = Math.round(positionX);
 					//console.log(positionX);
 					$('#tracker').css('left', positionX + 'px');
+
 					self.trackerMovement();
 				}
 			}, 1000);
@@ -173,6 +181,42 @@ window.PlaylistView = Backbone.View.extend({
 		}
 	},
 
+	bufferInit: function() {
+		var loadedFraction = player.getVideoLoadedFraction();
+
+		//	If the loaded fraction is very close to where the track current time is (5 sec)
+		if (loadedFraction * playlist.currentTrack.get('durationInSec') >= player.getCurrentTime()
+			&& loadedFraction * playlist.currentTrack.get('durationInSec') <= player.getCurrentTime() + 5){
+			//console.log(loadedFraction);
+			this.videoStartingSec = player.getCurrentTime();
+			//	If no loop controlling the buffer yet
+			if (! this.bufferMoving) this.bufferMovement();
+			this.bufferMoving = true;
+		}
+	},
+
+	bufferMovement: function() {
+		var self = this;
+
+			setTimeout(function() {
+				if (self.bufferMoving) {
+					//	We compute the position and the width of the buffer
+					var positionX = self.videoStartingSec / playlist.currentTrack.get('durationInSec') * (window.innerWidth - 10);
+					positionX = Math.round(positionX);
+					
+					var width = (player.getVideoLoadedFraction() - self.videoStartingSec / playlist.currentTrack.get('durationInSec')) * (window.innerWidth - 10);
+					width = Math.round(width);
+					
+					$('#tracker-buffer').css({
+						'left': positionX + 'px',
+						'width': width + 'px',
+					});
+
+					self.bufferMovement();
+				}
+			}, 1000);
+	},
+
 	//
 	//	PLAYER EVENTS HANDLING
 	//
@@ -191,9 +235,11 @@ window.PlaylistView = Backbone.View.extend({
 				this.trackerStopMoving();
 				break;
 			case YT.PlayerState.PLAYING:
+				this.bufferInit();
 				this.trackerStartMoving();
 				break;
 			case YT.PlayerState.BUFFERING:
+				this.bufferInit();
 				this.trackerStopMoving();
 				break;
 			case YT.PlayerState.CUED:
@@ -205,6 +251,5 @@ window.PlaylistView = Backbone.View.extend({
 	},
 
 	playerError: function() {
-
 	},
 });

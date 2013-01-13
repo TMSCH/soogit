@@ -3,7 +3,7 @@
 	<!-- CURRENT TRACK IF THERE IS ONE -->
 		<% if (typeof currentTrack != 'undefined') { %>
 				<div class="trackname">
-				<% if (typeof currentTrack.videoTitle == "undefined" && typeof currentTrack.name != 'undefined' && typeof currentTrack.artist != 'undefined') { %>
+				<% if (typeof currentTrack.name != 'undefined' && typeof currentTrack.artist != 'undefined') { %>
 					<%= currentTrack.artist %> - <%= currentTrack.name %>
 				<% } else { %>
 					<%= currentTrack.videoTitle.length > 50 ? currentTrack.videoTitle.substr(0, 47) + '...' : currentTrack.videoTitle %>
@@ -24,7 +24,7 @@
 		<% } if (typeof nextTrack != 'undefined') { %>
 			<div class="next-one small">Next track :</div>
 			<div class="trackname small">
-						<% if (typeof nextTrack.videoTitle == "undefined" && typeof nextTrack.name != 'undefined' && typeof nextTrack.artist != 'undefined') { %>
+						<% if (typeof nextTrack.name != 'undefined' && typeof nextTrack.artist != 'undefined') { %>
 							<%= nextTrack.artist %> - <%= nextTrack.name %>
 						<% } else { %>
 							<%= nextTrack.videoTitle.length > 40 ? nextTrack.videoTitle.substr(0, 37) + '...' : nextTrack.videoTitle %>

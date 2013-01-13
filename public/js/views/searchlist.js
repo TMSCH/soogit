@@ -109,7 +109,10 @@ window.NavbarView = Backbone.View.extend({
 			var self = this;
 			this.panelMoving = true;
 			$('#search-list-container', this.el).addClass('retracted')
-									.animate({'right': '-350px', 'opacity': '0.50'}, 300, 'swing', function(){self.panelMoving = false});
+									.animate({'right': '-400px', 'opacity': '0.50'}, 300, 'swing', function(){self.panelMoving = false});
+			setTimeout(function(){
+				$('#search-list-container', self.el).addClass('hidden');
+			}, 300);
 		}
 	},
 
@@ -271,7 +274,7 @@ window.SearchListItemView = Backbone.View.extend({
 		e.stopPropagation();
 		//	We reset the playlist so the first track is the one selected
 		playlist.reset(this.model);
-		console.log($(e.currentTarget).hasClass('add-to-playlist'));
+		//console.log($(e.currentTarget).hasClass('add-to-playlist'));
 		
 		//	We check whether the 'add-to-playlist' link has been clicked, if not we load the video
 		if (! $(e.currentTarget).hasClass('add-to-playlist'))
@@ -289,7 +292,14 @@ window.SearchListItemView = Backbone.View.extend({
 
 window.searchVideos = function(options, callback) {
 
-		query = options.query.toLowerCase().replace(/ /g,"+");
+		//	We prepare the query
+		var query = options.query.toLowerCase().replace(/\W/g, ' ').replace(/ {2,}/g, ' ');
+		query = query.replace(/ /g,"+");
+		//	Removing in the search terms we should not have (live, full album)
+		if (query.indexOf('live') < 0) query += '+-live';
+		if (query.indexOf('concert') < 0) query += '+-concert';
+		query += '+-"full+album"';
+
 		maxResults = typeof options.maxResults !== undefined ? options.maxResults : 1;
 
         if (!query) {
@@ -301,16 +311,13 @@ window.searchVideos = function(options, callback) {
 
         //  Searching for videos through the Youtube Data API
         //  Options for the GET request
-        var url = 'http://gdata.youtube.com/feeds/api/videos';
+        var url = 'http://gdata.youtube.com/feeds/api/videos/-/Music/-live/?v=2&alt=jsonc&max-results=' + maxResults + '&q=' + query;
+        console.log(url);
 
         //  Getting the response from Youtube API
         $.ajax({
             url: url,
             dataType: 'jsonp',
-            data: {q: query,
-                    'max-results': maxResults,
-                    alt: 'jsonc',
-                    v: '2'},
 
             success: function(res){
                 var i = 0;

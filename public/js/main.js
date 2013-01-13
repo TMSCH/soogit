@@ -61,7 +61,7 @@ jQuery(document).ready(function($) {
     //  Idle handle
     $.idleTimer(5000);
     $(document).bind("idle.idleTimer", function(){
-        $('#navbar, #next-track-container, #track-navbar').animate({opacity: 0.2}, 2000);
+        $('#navbar, #next-track-container, #track-navbar').animate({opacity: 0.2}, 1000);
     });
 
 
@@ -95,6 +95,7 @@ function startTracker() {
         //  Clicking on the bar of tracker
         $('#track-navbar').click(function(e) {
             if (playlist.currentTrack) {
+                $('#tracker').css('left', e.pageX - 5);
                 player.seekTo(Math.round(playlist.currentTrack.get('durationInSec') * e.pageX / (window.innerWidth - 10)), true);
             }
         });
@@ -103,6 +104,10 @@ function startTracker() {
             $('#tracker').draggable('disable');
             $('#tracker').css('opacity', 1);
             //app.playlistController.trackerRelease();
+        });
+
+        $(window).resize(function() {
+            if (player !== undefined) player.setSize(window.innerWidth, window.innerHeight);
         });
     } else setTimeout(startTracker, 1000);
 }

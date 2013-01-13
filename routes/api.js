@@ -589,7 +589,7 @@ var getArtistsTopTracks = function(artists, totalNbToGet, tracksList, callback) 
         getArtistTopTracks(artists.shift(), nbr, function(tracks) {
             //  When the response is received, we call the same method with the reduced list of artists,
             //  The changed total nb to get, and the tracklists updated
-            if (artists.length > 0)
+            if (artists && artists.length > 0)
                 getArtistsTopTracks(artists, totalNbToGet - tracks.length, tracksList.concat(tracks), callback);
             else callback(tracksList);
         });

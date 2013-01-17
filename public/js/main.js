@@ -61,19 +61,22 @@ jQuery(document).ready(function($) {
     //  Idle handle
     $.idleTimer(5000);
     $(document).bind("idle.idleTimer", function(){
-        $('#navbar, #next-track-container, #track-navbar').animate({opacity: 0.2}, 1000);
+        $('#top-bar, #next-track-container, #track-navbar').animate({opacity: 0.2}, 1000);
     });
 
 
     $(document).bind("active.idleTimer", function(){
-        $('#navbar, #next-track-container, #track-navbar').animate({opacity: 1});
+        $('#top-bar, #next-track-container, #track-navbar').animate({opacity: 1});
     });
 
     //  Player mask
     $('#player-mask').css({'width': window.innerWidth + 'px', 'height': window.innerHeight + 'px'});
-    $('#player-mask').click(function() {
+    /*$('#player-mask').click(function() {
         playVideo();
-    });
+    });*/
+
+    //  Search list container
+    $('#search-list-container').css('height', window.innerHeight - 60 + 'px');
 
     setTimeout(startTracker, 1000);
 
@@ -87,7 +90,9 @@ function startTracker() {
                 drag: app.playlistController.trackerTracker,
                 stop: app.playlistController.trackerRelease,
         })
-            .click(function(e){e.stopPropagation()})
+            .click(function(e){
+                e.stopPropagation();
+            })
             .draggable('disable')
             .css('opacity', 1).data('lastPosX', 0)
             .hover(app.playlistController.trackerHover, app.playlistController.trackerOut);
@@ -103,6 +108,7 @@ function startTracker() {
         $(document).on('mouseup', function() {
             $('#tracker').draggable('disable');
             $('#tracker').css('opacity', 1);
+            $('#player-mask').addClass('hidden');
             //app.playlistController.trackerRelease();
         });
 

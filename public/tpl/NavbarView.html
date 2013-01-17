@@ -1,19 +1,19 @@
-<div class="navbar navbar-fixed-top">
-      <div class="navbar-inner">
-      	<a class="brand"></a>
-        <a class="brand">The DJ - Add a song to start the playlist</a>
-        <ul class="nav">
-          <li class="divider-vertical"></li>
-          <li><a href="#help">How does it work ?</a></li>
-        </ul>
-        <div id="search-bar" class="navbar-form pull-right">
-        	  <img src="img/ajax-loader.gif" class="search-loader hidden" />
-            <input type="text" title="" id="trackname" class="input-large search-query" placeholder="Search a song..." />
-            <a id="search-track" class="btn">Search</a>
-        </div>
-      </div>
+<div id="top-bar">
+  <div class="brand-name category">The DJ - Add a song to start the playlist</div>
+  <a href="#help">
+    <div class="category">How does it work ?</div>
+  </a>
+  <!--<div id="search-track" class="category pull-right search-btn">Search</div>-->
+  <div id="search-bar" class="search-bar pull-right">
+    <input type="text" title="" id="trackname" class="input-search" placeholder="Search a song..." />
+  </div>
+  <div class="category pull-right no-video-found hidden">No video found</div>
+  <div class="category pull-right">
+    <img src="img/ajax-loader-dark-gray.gif" class="search-loader hidden" />
+  </div>
 </div>
 
 <div id="search-list-container" class="hidden">
+  <div id="search-list-hider"></div>
 	<table id="search-list"></table>
 </div>

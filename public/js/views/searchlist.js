@@ -79,6 +79,7 @@ window.NavbarView = Backbone.View.extend({
 			//We remove all the old views
 			//console.log('Removing all the search results views');
 			$('#search-list', this.el).html("");
+			this.hide();
 			for (var i = 0; i < this.searchListItems.length; i++)
 			{
 				this.searchListItems[i].remove();
@@ -126,14 +127,22 @@ window.NavbarView = Backbone.View.extend({
 								.animate({'right': '0px', 'opacity': '1'}, 300, 'swing', function(){self.panelMoving = false});
 				$('#trackname').autocomplete('close');
 			}
-		} else if (this.model.length == 0) {
-			$('#trackname').tooltip('open');
+		} else this.displayNoVideoFound();
+	},
+
+	displayNoVideoFound: function() {
+		if (this.model.length == 0) {
+			$('.no-video-found').removeClass('hidden');
+			//$('#trackname').attr('title', 'No video found');
+			//$('#trackname').tooltip('open');
 		}
 	},
 
 	isNotEmpty: function(e) {
-		$('#trackname').tooltip('open');
-		if ($(e.target).val() != '') this.show();
+		if ($(e.target).val() != ''){
+			this.displayNoVideoFound();
+			this.show();
+		}
 	},
 
 	isSubmit: function (e) {
@@ -181,6 +190,7 @@ window.NavbarView = Backbone.View.extend({
 		//
 
 		$('#trackname').tooltip('close');
+		$('.no-video-found').addClass('hidden');
 
 		if (this.lastSearch != $("#trackname", this.el).val())
 			$('#trackname').autocomplete('enable');
@@ -222,9 +232,12 @@ window.NavbarView = Backbone.View.extend({
 		if ($("#trackname", this.el).val() != this.lastSearch){
 			this.lastSearch = $("#trackname", this.el).val();
 			
-			$('#search-track', this.el).removeClass('searching-needed');
+			//$('#search-track', this.el).removeClass('searching-needed');
 			//	We display the search loader
 			$('.search-loader').removeClass('hidden');
+
+			this.model.reset();
+	        this.model.trigger('remove');
 
 	        var self = this;
 	        searchVideos(
@@ -237,21 +250,15 @@ window.NavbarView = Backbone.View.extend({
 
 	        	if (tracks == null) {
 	        		//	Tooltip to say we haven't found any videos
-	        		$('#trackname').attr('title', 'No video found');
-	        		$('#trackname').tooltip('open');
+	        		self.displayNoVideoFound();
 	        		return null;
 	        	}
 
 	        	//	Adding the result to the model
-	        	self.model.reset();
-	        	self.model.trigger('remove');
 	        	self.model.addTracksFromYoutube(tracks);
 	        	return;
 	        });
-	    } else if (this.model.length == 0) {
-	    	$('#trackname').attr('title', 'No video found');
-	        $('#trackname').tooltip('open');
-	    }
+	    } else this.displayNoVideoFound();
     },
 
 });

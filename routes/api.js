@@ -292,12 +292,12 @@ var getMetaData = function (tracknamePlain, callback) {
 };
 
 var clean = function (text) {
-    return text.replace(/\(original mix\)/i, '')
-                //.replace(/(\(|\[|{).*(remix){0}(\)|\]|})/i,'')
-                .replace(/(\(|\[|{).*(\)|\]|})/i,'')
-                .replace(/(official video|lyrics|hdtv|hq|hd)/gi, '')
-                .replace(/\.[\w\d]+$/i, '')
-                .replace(/[^\w\d ]/g, '');
+    return text.replace(/\(original mix\)/i, '')                        //  Removing original mix
+                //.replace(/(\(|\[|{).*(remix){0}(\)|\]|})/i,'')        
+                .replace(/(\(|\[|{).*(\)|\]|})/i,'')                    //  Removing content betweeb brackets (), {} and []
+                .replace(/(official video|lyrics|hdtv|hq|hd)/gi, '')    //  Removing special mentions like hd hq etc
+                .replace(/\.[\w\d]+$/i, '')                             //  Removing text after a dot at the end of the title ex: .xxx
+                .replace(/[^\w\d ]/g, '');                              //  Removing non character words
 }
 
 var compare = function (text1, text2) {

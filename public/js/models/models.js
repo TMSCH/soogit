@@ -63,10 +63,11 @@ window.Track = Backbone.Model.extend({
 
     getYoutubeData: function(callback) {
         var self = this;
+        var title = this.get('name') + ' ' + this.get('artist');
         if (! this.has('videoId')) {
             searchVideos(
                 {
-                    query: this.get('name') + ' ' + this.get('artist'),
+                    query: title,
                     maxResults: 1
                 },
                 function(tracks) {
@@ -75,7 +76,29 @@ window.Track = Backbone.Model.extend({
                         callback(false);
                         return;
                     }
-                    console.log(tracks[0]);
+                    //console.log(tracks[0]);
+
+                    /* TO CHECK WHETHER IT WORKS BETTER THIS WAY
+
+                    //  We try to find the right video, by checking words by words
+                    title = title.replace(/\W/gi, ' ').toLowerCase();
+                    var words = self.get('name').split(' ').concat(self.get('artist').split(' '));
+                    var noMatch = true;
+                    var i = 0;
+                    while (tracks[i] && noMatch) {
+                        var count = 0;
+                        for (var i = words.length - 1; i >= 0; i--) {
+                            if (tracks[i].title.replace(/\W/gi, ' ').toLowerCase().indexOf(words[i])) count++;
+                        };
+                        if (count / words.length > 0.6) noMatch = false;
+                        else ++i;
+                    }
+                    if (noMatch) {
+                        //  No matching tracks
+                        callback(false);
+                        return;
+                    }*/
+                    
                     //  We parse the data
                     self.addDataFromYoutube(tracks[0]);
                     

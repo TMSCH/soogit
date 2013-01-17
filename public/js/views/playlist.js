@@ -166,6 +166,7 @@ window.PlaylistView = Backbone.View.extend({
 	},
 
 	trackerRelease: function(e, ui) {
+		$('#player-mask').addClass('hidden');
 		if (ui && playlist.currentTrack) {
 			$('#tracker').data('lastPosX', ui.position.left);
 			player.seekTo(Math.round(playlist.currentTrack.get('durationInSec') * ui.position.left / (window.innerWidth - 10)), true);
@@ -173,6 +174,7 @@ window.PlaylistView = Backbone.View.extend({
 	},
 
 	trackerTracker: function(e, ui) {
+		$('#player-mask').removeClass('hidden');
 		if (ui && playlist.currentTrack) {
 			if (Math.abs(ui.position.left - $('#tracker').data('lastPosX')) > 20) {
 				$('#tracker').data('lastPosX', ui.position.left);
